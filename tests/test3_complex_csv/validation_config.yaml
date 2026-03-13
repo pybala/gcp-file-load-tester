@@ -1,0 +1,233 @@
+# ============================================================
+# BigQuery Data Validation Framework - Configuration File
+# Test 3: Complex CSV — bq-customer-transactions
+# ============================================================
+# Source : tests/test3_complex_csv/bq-customer-transactions.csv
+# Target : raw_file_loads.customer_transactions
+#
+# Table contains 8 rows across 17 columns covering:
+#   INT64, STRING, NUMERIC, FLOAT64, BOOL, DATE, TIMESTAMP, JSON
+# ============================================================
+
+# ----------------------------
+# Target BigQuery table
+# ----------------------------
+project: data-test-automation-489413
+dataset: raw_file_loads
+table: customer_transactions
+
+# ----------------------------
+# Source CSV file
+# ----------------------------
+file_path: /Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test3_complex_csv/bq-customer-transactions.csv
+
+# ----------------------------
+# Primary key definition
+# transaction_id is a unique INT64 identifier per row.
+# Using a single INTEGER PK keeps random_sampling (Layer 7) fully functional.
+# ----------------------------
+primary_keys:
+  - transaction_id
+
+# ----------------------------
+# Partition configuration
+# transaction_date is a DATE column; each row falls on a distinct date
+# (2025-02-01 through 2025-02-08), making per-partition row-count
+# comparison meaningful.
+# ----------------------------
+partition:
+  enabled: true
+  column: transaction_date
+  type: DATE
+
+# ----------------------------
+# Random sampling
+# File has only 8 rows — setting to 8 ensures all rows are sampled.
+# The framework will use all available file rows when the file size is
+# smaller than random_sample_size.
+# ----------------------------
+random_sample_size: 8
+
+# ----------------------------
+# Validation layers
+# All 10 layers enabled; partition_validation is also enabled because
+# partition.enabled is true above.
+# ----------------------------
+validation_layers:
+  metadata_validation: true       # Layer 1  — column names vs BQ schema
+  row_count_validation: true      # Layer 2  — total row count file vs BQ
+  primary_key_uniqueness: true    # Layer 3  — duplicate / null PK check
+  aggregate_validation: true      # Layer 4  — sum/min/max/avg/distinct per column
+  partition_validation: true      # Layer 5  — per-date row count file vs BQ
+  hash_validation: true           # Layer 6  — FARM_FINGERPRINT aggregate hash
+  random_sampling: true           # Layer 7  — field-level comparison on sampled rows
+  column_distribution: true       # Layer 8  — min/max/avg/stddev/null_count
+  null_validation: true           # Layer 9  — null count per column file vs BQ
+  column_checksum: true           # Layer 10 — per-column hash checksum file vs BQ
+
+# ----------------------------
+# Aggregate validation config  (Layer 4)
+# Rules:
+#   • NUMERIC / FLOAT / INT columns → sum, min, max, avg
+#   • STRING / categorical columns  → distinct_count
+#   • DATE / TIMESTAMP columns      → min, max  (range check)
+#   • BOOL / JSON columns           → distinct_count (presence / cardinality)
+# ----------------------------
+aggregate_columns:
+
+  # --- Numeric columns ---
+  - column: transaction_id
+    functions:
+      - min
+      - max
+      - distinct_count    # should equal 8 (all rows unique)
+
+  - column: customer_id
+    functions:
+      - min
+      - max
+      - distinct_count
+
+  - column: transaction_amount
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  - column: tax_amount
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  - column: discount_percent
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  # --- String / categorical columns ---
+  - column: transaction_uuid
+    functions:
+      - distinct_count    # should equal 8 (all UUIDs unique)
+
+  - column: customer_email
+    functions:
+      - distinct_count    # should equal 8 (all emails unique)
+
+  - column: country_code
+    functions:
+      - distinct_count    # 7 distinct values: US, IN, UK, AU, SG, CA, DE
+
+  - column: payment_method
+    functions:
+      - distinct_count    # 4 distinct values: CREDIT_CARD, UPI, PAYPAL, CASH
+
+  - column: transaction_status
+    functions:
+      - distinct_count    # 4 distinct values: COMPLETED, PENDING, FAILED, REFUNDED
+
+  - column: product_ids
+    functions:
+      - distinct_count    # pipe-separated string column; 8 distinct values
+
+  # --- Boolean columns ---
+  - column: is_fraud
+    functions:
+      - distinct_count    # 2 distinct values: true, false
+
+  - column: is_first_purchase
+    functions:
+      - distinct_count    # 2 distinct values: true, false
+
+  # --- Date / Timestamp range checks ---
+  - column: transaction_date
+    functions:
+      - min               # 2025-02-01
+      - max               # 2025-02-08
+
+  - column: transaction_timestamp
+    functions:
+      - min               # 2025-02-01 10:15:30 UTC
+      - max               # 2025-02-08 07:45:50 UTC
+
+  - column: ingestion_timestamp
+    functions:
+      - min               # 2025-02-01 10:16:00 UTC
+      - max               # 2025-02-08 07:46:20 UTC
+
+# ----------------------------
+# Column distribution config  (Layer 8)
+# Only NUMERIC columns (INT64, NUMERIC, FLOAT64) are listed here.
+# STRING, BOOL, DATE, TIMESTAMP, and JSON columns are excluded to avoid
+# BigQuery "Bad double value" errors during stddev computation.
+# ----------------------------
+distribution_columns:
+  - transaction_id        # INT64   — range 10001–10008
+  - customer_id           # INT64   — range 501–508
+  - transaction_amount    # NUMERIC — range 60.25–420.90
+  - tax_amount            # NUMERIC — range 4.00–35.00
+  - discount_percent      # FLOAT64 — range 0.0–15.0
+
+# ----------------------------
+# Null check columns  (Layer 9)
+# Explicitly listing all columns to verify every field was loaded without
+# unexpected nulls.  An empty list [] would also check all columns
+# automatically, but an explicit list makes intent clear for this test.
+# ----------------------------
+null_check_columns:
+  - transaction_id
+  - transaction_uuid
+  - customer_id
+  - customer_email
+  - country_code
+  - transaction_amount
+  - tax_amount
+  - discount_percent
+  - payment_method
+  - transaction_status
+  - is_fraud
+  - is_first_purchase
+  - product_ids
+  - metadata_json         # JSON column — null check still valid
+  - transaction_date
+  - transaction_timestamp
+  - ingestion_timestamp
+
+# ----------------------------
+# Column checksum columns  (Layer 10)
+# Checksums every column (scalar and JSON) to confirm all data was loaded.
+# An empty list [] would also checksum all columns automatically, but an
+# explicit list is provided for full transparency in this complex-schema test.
+#
+# NOTE: is_first_purchase is intentionally excluded from the checksum list.
+# This dataset has exactly 4 true and 4 false values for that column.
+# Both the file-side (Python XOR of hash(cell)) and the BQ-side
+# (BIT_XOR(FARM_FINGERPRINT(...))) reduce to 0 when an even number of
+# identical values are XOR'd together — producing a false "no data" result.
+# The column is still fully validated by:
+#   • null_validation       (Layer 9) — confirms 0 nulls
+#   • aggregate_validation  (Layer 4) — distinct_count confirms 2 unique values
+#   • random_sampling       (Layer 7) — field-level value comparison per row
+# ----------------------------
+column_checksum_columns:
+  - transaction_id
+  - transaction_uuid
+  - customer_id
+  - customer_email
+  - country_code
+  - transaction_amount
+  - tax_amount
+  - discount_percent
+  - payment_method
+  - transaction_status
+  - is_fraud
+  # is_first_purchase excluded — XOR hash collision (4×true XOR 4×false = 0)
+  - product_ids
+  - metadata_json         # JSON column — BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(col)))
+  - transaction_date
+  - transaction_timestamp
+  - ingestion_timestamp

@@ -1,0 +1,9 @@
+transaction_id,transaction_uuid,customer_id,customer_email,country_code,transaction_amount,tax_amount,discount_percent,payment_method,transaction_status,is_fraud,is_first_purchase,product_ids,metadata_json,transaction_date,transaction_timestamp,ingestion_timestamp
+10001,txn-001,501,alice@example.com,US,120.50,10.00,5.0,CREDIT_CARD,COMPLETED,false,true,"SKU-101|SKU-102","{""source"":""web"",""campaign"":""summer_sale""}",2025-02-01,2025-02-01 10:15:30,2025-02-01 10:16:00
+10002,txn-002,502,bob@example.com,IN,250.00,18.00,0,UPI,COMPLETED,false,false,"SKU-110","{""source"":""mobile"",""campaign"":""app_launch""}",2025-02-02,2025-02-02 11:20:00,2025-02-02 11:21:10
+10003,txn-003,503,charlie@example.com,UK,80.75,6.50,10.5,PAYPAL,PENDING,false,true,"SKU-201|SKU-202|SKU-203","{""source"":""web"",""campaign"":""winter_offer""}",2025-02-03,2025-02-03 09:05:45,2025-02-03 09:06:10
+10004,txn-004,504,david@example.com,AU,300.10,22.00,15.0,CREDIT_CARD,FAILED,true,false,"SKU-301","{""source"":""api"",""campaign"":""partner_referral""}",2025-02-04,2025-02-04 12:40:00,2025-02-04 12:41:15
+10005,txn-005,505,emma@example.com,SG,60.25,4.00,0,CASH,COMPLETED,false,true,"SKU-401|SKU-402","{""source"":""web"",""campaign"":""clearance_sale""}",2025-02-05,2025-02-05 08:30:00,2025-02-05 08:31:05
+10006,txn-006,506,frank@example.com,US,150.00,12.00,5.5,CREDIT_CARD,COMPLETED,false,false,"SKU-501","{""source"":""mobile"",""campaign"":""push_notification""}",2025-02-06,2025-02-06 14:10:25,2025-02-06 14:11:00
+10007,txn-007,507,grace@example.com,CA,420.90,35.00,12.0,PAYPAL,REFUNDED,false,false,"SKU-601|SKU-602","{""source"":""web"",""campaign"":""holiday_sale""}",2025-02-07,2025-02-07 16:55:10,2025-02-07 16:56:00
+10008,txn-008,508,henry@example.com,DE,99.99,7.99,0,CREDIT_CARD,COMPLETED,false,true,"SKU-701","{""source"":""api"",""campaign"":""affiliate""}",2025-02-08,2025-02-08 07:45:50,2025-02-08 07:46:20

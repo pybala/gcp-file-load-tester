@@ -1,0 +1,86 @@
+# ============================================================
+# BigQuery Data Validation Framework - Configuration File
+# ============================================================
+# All validation layers are independently togglable.
+# Supports ANY BigQuery table and ANY CSV file.
+# ============================================================
+
+# ----------------------------
+# Target BigQuery table
+# ----------------------------
+project: data-test-automation-489413          # GCP project ID (optional; defaults to client default)
+dataset: raw_file_loads               # BigQuery dataset name
+table: generic_file_load_test                   # BigQuery table name
+
+# ----------------------------
+# Source CSV file
+# ----------------------------
+file_path: /Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test1/bq_generic_test_file.csv      # Absolute or relative path to the CSV file
+
+# ----------------------------
+# Primary key definition
+# Supports composite keys (list of column names)
+# ----------------------------
+primary_keys:
+  - id
+  # event_timestamp removed: composite TIMESTAMP PKs cause a type mismatch
+  # in the BigQuery IN clause used by random_sampling (Layer 7).
+  # Use a single INTEGER/STRING primary key to keep random_sampling enabled.
+
+# ----------------------------
+# Partition configuration
+# Set enabled: true to activate partition validation
+# ----------------------------
+partition:
+  enabled: false
+
+# ----------------------------
+# Random sampling
+# Number of rows to randomly sample for comparison
+# ----------------------------
+random_sample_size: 100
+
+# ----------------------------
+# Validation layers
+# Toggle each validation independently
+# ----------------------------
+validation_layers:
+  metadata_validation: true       # Schema: columns present, no missing/extra
+  row_count_validation: true      # File row count vs BigQuery row count
+  primary_key_uniqueness: true    # Duplicate PK detection in file and BQ
+  aggregate_validation: true      # sum/min/max/avg/distinct per column
+  partition_validation: false      # Per-partition aggregation comparison
+  hash_validation: true           # Deterministic hash comparison (FARM_FINGERPRINT)
+  random_sampling: true           # Random row fetch and field-level compare
+  column_distribution: true       # min/max/avg/stddev/null_count per column
+
+# ----------------------------
+# Aggregate validation config
+# Specify columns and which functions to apply
+# Supported functions: sum, min, max, avg, distinct_count
+# ----------------------------
+aggregate_columns:
+  - column: amount
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+  - column: quantity
+    functions:
+      - sum
+      - avg
+  - column: email
+    functions:
+      - distinct_count
+
+# ----------------------------
+# Column distribution config
+# Columns to compute distribution statistics on
+# Leave empty to auto-detect all numeric columns
+# ----------------------------
+distribution_columns:
+  # category removed: STRING columns are not supported by distribution validation.
+  # Only NUMERIC columns (INTEGER, FLOAT, NUMERIC) should be listed here.
+  # Using a STRING column causes BigQuery error: "Bad double value".
+  - quantity

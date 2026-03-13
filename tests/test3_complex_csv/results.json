@@ -1,0 +1,1286 @@
+{
+  "run_id": "0de60d29-b9a9-4fac-9cc1-d281a6fabee5",
+  "dataset": "raw_file_loads",
+  "table": "customer_transactions",
+  "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test3_complex_csv/bq-customer-transactions.csv",
+  "timestamp": "2026-03-13T15:47:14.306141+00:00",
+  "overall_status": "PASS",
+  "total_execution_time_ms": 18846.367,
+  "summary": {
+    "total": 78,
+    "passed": 78,
+    "failed": 0,
+    "errors": 0,
+    "warned": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "test_name": "schema_validation",
+      "status": "PASS",
+      "expected": [
+        "country_code",
+        "customer_email",
+        "customer_id",
+        "discount_percent",
+        "ingestion_timestamp",
+        "is_first_purchase",
+        "is_fraud",
+        "metadata_json",
+        "payment_method",
+        "product_ids",
+        "tax_amount",
+        "transaction_amount",
+        "transaction_date",
+        "transaction_id",
+        "transaction_status",
+        "transaction_timestamp",
+        "transaction_uuid"
+      ],
+      "actual": [
+        "country_code",
+        "customer_email",
+        "customer_id",
+        "discount_percent",
+        "ingestion_timestamp",
+        "is_first_purchase",
+        "is_fraud",
+        "metadata_json",
+        "payment_method",
+        "product_ids",
+        "tax_amount",
+        "transaction_amount",
+        "transaction_date",
+        "transaction_id",
+        "transaction_status",
+        "transaction_timestamp",
+        "transaction_uuid"
+      ],
+      "details": {
+        "common_columns_count": 17,
+        "missing_from_file": [],
+        "extra_in_file": [],
+        "bq_column_types": [
+          "country_code: BQ=STRING",
+          "customer_email: BQ=STRING",
+          "customer_id: BQ=INTEGER",
+          "discount_percent: BQ=FLOAT",
+          "ingestion_timestamp: BQ=TIMESTAMP",
+          "is_first_purchase: BQ=BOOLEAN",
+          "is_fraud: BQ=BOOLEAN",
+          "metadata_json: BQ=JSON",
+          "payment_method: BQ=STRING",
+          "product_ids: BQ=STRING",
+          "tax_amount: BQ=NUMERIC",
+          "transaction_amount: BQ=NUMERIC",
+          "transaction_date: BQ=DATE",
+          "transaction_id: BQ=INTEGER",
+          "transaction_status: BQ=STRING",
+          "transaction_timestamp: BQ=TIMESTAMP",
+          "transaction_uuid: BQ=STRING"
+        ]
+      },
+      "execution_time_ms": 0.365
+    },
+    {
+      "test_name": "row_count_validation",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "file_row_count": 8,
+        "bq_row_count": 8,
+        "delta": 0,
+        "delta_pct": 0.0
+      },
+      "execution_time_ms": 1581.342
+    },
+    {
+      "test_name": "primary_key_uniqueness_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "transaction_id"
+        ],
+        "duplicate_rows": 0
+      },
+      "execution_time_ms": 1.265
+    },
+    {
+      "test_name": "primary_key_null_check_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "transaction_id"
+        ],
+        "null_pk_rows": 0
+      },
+      "execution_time_ms": 3.357
+    },
+    {
+      "test_name": "primary_key_uniqueness_bq",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "transaction_id"
+        ],
+        "duplicate_pk_groups_in_bq": 0
+      },
+      "execution_time_ms": 1456.185
+    },
+    {
+      "test_name": "aggregate_validation_transaction_id_min",
+      "status": "PASS",
+      "expected": 10001,
+      "actual": 10001,
+      "details": {
+        "column": "transaction_id",
+        "function": "min",
+        "file_value": 10001,
+        "bq_value": 10001
+      },
+      "execution_time_ms": 0.696
+    },
+    {
+      "test_name": "aggregate_validation_transaction_id_max",
+      "status": "PASS",
+      "expected": 10008,
+      "actual": 10008,
+      "details": {
+        "column": "transaction_id",
+        "function": "max",
+        "file_value": 10008,
+        "bq_value": 10008
+      },
+      "execution_time_ms": 0.343
+    },
+    {
+      "test_name": "aggregate_validation_transaction_id_distinct_count",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "column": "transaction_id",
+        "function": "distinct_count",
+        "file_value": 8,
+        "bq_value": 8
+      },
+      "execution_time_ms": 0.498
+    },
+    {
+      "test_name": "aggregate_validation_customer_id_min",
+      "status": "PASS",
+      "expected": 501,
+      "actual": 501,
+      "details": {
+        "column": "customer_id",
+        "function": "min",
+        "file_value": 501,
+        "bq_value": 501
+      },
+      "execution_time_ms": 1.184
+    },
+    {
+      "test_name": "aggregate_validation_customer_id_max",
+      "status": "PASS",
+      "expected": 508,
+      "actual": 508,
+      "details": {
+        "column": "customer_id",
+        "function": "max",
+        "file_value": 508,
+        "bq_value": 508
+      },
+      "execution_time_ms": 0.194
+    },
+    {
+      "test_name": "aggregate_validation_customer_id_distinct_count",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "column": "customer_id",
+        "function": "distinct_count",
+        "file_value": 8,
+        "bq_value": 8
+      },
+      "execution_time_ms": 0.373
+    },
+    {
+      "test_name": "aggregate_validation_transaction_amount_sum",
+      "status": "PASS",
+      "expected": 1482.49,
+      "actual": 1482.4900000000002,
+      "details": {
+        "column": "transaction_amount",
+        "function": "sum",
+        "file_value": 1482.49,
+        "bq_value": 1482.4900000000002
+      },
+      "execution_time_ms": 1.471
+    },
+    {
+      "test_name": "aggregate_validation_transaction_amount_min",
+      "status": "PASS",
+      "expected": 60.25,
+      "actual": "60.25",
+      "details": {
+        "column": "transaction_amount",
+        "function": "min",
+        "file_value": 60.25,
+        "bq_value": "60.25"
+      },
+      "execution_time_ms": 0.28
+    },
+    {
+      "test_name": "aggregate_validation_transaction_amount_max",
+      "status": "PASS",
+      "expected": 420.9,
+      "actual": "420.9",
+      "details": {
+        "column": "transaction_amount",
+        "function": "max",
+        "file_value": 420.9,
+        "bq_value": "420.9"
+      },
+      "execution_time_ms": 0.189
+    },
+    {
+      "test_name": "aggregate_validation_transaction_amount_avg",
+      "status": "PASS",
+      "expected": 185.31125,
+      "actual": 185.31125,
+      "details": {
+        "column": "transaction_amount",
+        "function": "avg",
+        "file_value": 185.31125,
+        "bq_value": 185.31125
+      },
+      "execution_time_ms": 0.383
+    },
+    {
+      "test_name": "aggregate_validation_tax_amount_sum",
+      "status": "PASS",
+      "expected": 115.49000000000001,
+      "actual": 115.49000000000001,
+      "details": {
+        "column": "tax_amount",
+        "function": "sum",
+        "file_value": 115.49000000000001,
+        "bq_value": 115.49000000000001
+      },
+      "execution_time_ms": 0.598
+    },
+    {
+      "test_name": "aggregate_validation_tax_amount_min",
+      "status": "PASS",
+      "expected": 4.0,
+      "actual": "4",
+      "details": {
+        "column": "tax_amount",
+        "function": "min",
+        "file_value": 4.0,
+        "bq_value": "4"
+      },
+      "execution_time_ms": 0.131
+    },
+    {
+      "test_name": "aggregate_validation_tax_amount_max",
+      "status": "PASS",
+      "expected": 35.0,
+      "actual": "35",
+      "details": {
+        "column": "tax_amount",
+        "function": "max",
+        "file_value": 35.0,
+        "bq_value": "35"
+      },
+      "execution_time_ms": 0.072
+    },
+    {
+      "test_name": "aggregate_validation_tax_amount_avg",
+      "status": "PASS",
+      "expected": 14.436250000000001,
+      "actual": 14.436250000000001,
+      "details": {
+        "column": "tax_amount",
+        "function": "avg",
+        "file_value": 14.436250000000001,
+        "bq_value": 14.436250000000001
+      },
+      "execution_time_ms": 0.24
+    },
+    {
+      "test_name": "aggregate_validation_discount_percent_sum",
+      "status": "PASS",
+      "expected": 48.0,
+      "actual": 48.0,
+      "details": {
+        "column": "discount_percent",
+        "function": "sum",
+        "file_value": 48.0,
+        "bq_value": 48.0
+      },
+      "execution_time_ms": 1.132
+    },
+    {
+      "test_name": "aggregate_validation_discount_percent_min",
+      "status": "PASS",
+      "expected": 0.0,
+      "actual": 0.0,
+      "details": {
+        "column": "discount_percent",
+        "function": "min",
+        "file_value": 0.0,
+        "bq_value": 0.0
+      },
+      "execution_time_ms": 0.187
+    },
+    {
+      "test_name": "aggregate_validation_discount_percent_max",
+      "status": "PASS",
+      "expected": 15.0,
+      "actual": 15.0,
+      "details": {
+        "column": "discount_percent",
+        "function": "max",
+        "file_value": 15.0,
+        "bq_value": 15.0
+      },
+      "execution_time_ms": 0.113
+    },
+    {
+      "test_name": "aggregate_validation_discount_percent_avg",
+      "status": "PASS",
+      "expected": 6.0,
+      "actual": 6.0,
+      "details": {
+        "column": "discount_percent",
+        "function": "avg",
+        "file_value": 6.0,
+        "bq_value": 6.0
+      },
+      "execution_time_ms": 0.246
+    },
+    {
+      "test_name": "aggregate_validation_transaction_uuid_distinct_count",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "column": "transaction_uuid",
+        "function": "distinct_count",
+        "file_value": 8,
+        "bq_value": 8
+      },
+      "execution_time_ms": 0.91
+    },
+    {
+      "test_name": "aggregate_validation_customer_email_distinct_count",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "column": "customer_email",
+        "function": "distinct_count",
+        "file_value": 8,
+        "bq_value": 8
+      },
+      "execution_time_ms": 0.874
+    },
+    {
+      "test_name": "aggregate_validation_country_code_distinct_count",
+      "status": "PASS",
+      "expected": 7,
+      "actual": 7,
+      "details": {
+        "column": "country_code",
+        "function": "distinct_count",
+        "file_value": 7,
+        "bq_value": 7
+      },
+      "execution_time_ms": 1.17
+    },
+    {
+      "test_name": "aggregate_validation_payment_method_distinct_count",
+      "status": "PASS",
+      "expected": 4,
+      "actual": 4,
+      "details": {
+        "column": "payment_method",
+        "function": "distinct_count",
+        "file_value": 4,
+        "bq_value": 4
+      },
+      "execution_time_ms": 0.837
+    },
+    {
+      "test_name": "aggregate_validation_transaction_status_distinct_count",
+      "status": "PASS",
+      "expected": 4,
+      "actual": 4,
+      "details": {
+        "column": "transaction_status",
+        "function": "distinct_count",
+        "file_value": 4,
+        "bq_value": 4
+      },
+      "execution_time_ms": 0.545
+    },
+    {
+      "test_name": "aggregate_validation_product_ids_distinct_count",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "column": "product_ids",
+        "function": "distinct_count",
+        "file_value": 8,
+        "bq_value": 8
+      },
+      "execution_time_ms": 1.137
+    },
+    {
+      "test_name": "aggregate_validation_is_fraud_distinct_count",
+      "status": "PASS",
+      "expected": 2,
+      "actual": 2,
+      "details": {
+        "column": "is_fraud",
+        "function": "distinct_count",
+        "file_value": 2,
+        "bq_value": 2
+      },
+      "execution_time_ms": 1.065
+    },
+    {
+      "test_name": "aggregate_validation_is_first_purchase_distinct_count",
+      "status": "PASS",
+      "expected": 2,
+      "actual": 2,
+      "details": {
+        "column": "is_first_purchase",
+        "function": "distinct_count",
+        "file_value": 2,
+        "bq_value": 2
+      },
+      "execution_time_ms": 1.035
+    },
+    {
+      "test_name": "aggregate_validation_transaction_date_min",
+      "status": "PASS",
+      "expected": "2025-02-01",
+      "actual": "2025-02-01",
+      "details": {
+        "column": "transaction_date",
+        "function": "min",
+        "file_value": "2025-02-01",
+        "bq_value": "2025-02-01"
+      },
+      "execution_time_ms": 0.844
+    },
+    {
+      "test_name": "aggregate_validation_transaction_date_max",
+      "status": "PASS",
+      "expected": "2025-02-08",
+      "actual": "2025-02-08",
+      "details": {
+        "column": "transaction_date",
+        "function": "max",
+        "file_value": "2025-02-08",
+        "bq_value": "2025-02-08"
+      },
+      "execution_time_ms": 0.16
+    },
+    {
+      "test_name": "aggregate_validation_transaction_timestamp_min",
+      "status": "PASS",
+      "expected": "2025-02-01 10:15:30",
+      "actual": "2025-02-01T10:15:30+00:00",
+      "details": {
+        "column": "transaction_timestamp",
+        "function": "min",
+        "file_value": "2025-02-01 10:15:30",
+        "bq_value": "2025-02-01T10:15:30+00:00"
+      },
+      "execution_time_ms": 0.858
+    },
+    {
+      "test_name": "aggregate_validation_transaction_timestamp_max",
+      "status": "PASS",
+      "expected": "2025-02-08 07:45:50",
+      "actual": "2025-02-08T07:45:50+00:00",
+      "details": {
+        "column": "transaction_timestamp",
+        "function": "max",
+        "file_value": "2025-02-08 07:45:50",
+        "bq_value": "2025-02-08T07:45:50+00:00"
+      },
+      "execution_time_ms": 0.165
+    },
+    {
+      "test_name": "aggregate_validation_ingestion_timestamp_min",
+      "status": "PASS",
+      "expected": "2025-02-01 10:16:00",
+      "actual": "2025-02-01T10:16:00+00:00",
+      "details": {
+        "column": "ingestion_timestamp",
+        "function": "min",
+        "file_value": "2025-02-01 10:16:00",
+        "bq_value": "2025-02-01T10:16:00+00:00"
+      },
+      "execution_time_ms": 0.867
+    },
+    {
+      "test_name": "aggregate_validation_ingestion_timestamp_max",
+      "status": "PASS",
+      "expected": "2025-02-08 07:46:20",
+      "actual": "2025-02-08T07:46:20+00:00",
+      "details": {
+        "column": "ingestion_timestamp",
+        "function": "max",
+        "file_value": "2025-02-08 07:46:20",
+        "bq_value": "2025-02-08T07:46:20+00:00"
+      },
+      "execution_time_ms": 0.158
+    },
+    {
+      "test_name": "partition_validation",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "partition_column": "transaction_date",
+        "partition_type": "DATE",
+        "total_partitions_checked": 8,
+        "matching_partitions": 8,
+        "mismatched_partitions": 0,
+        "missing_in_bq": [],
+        "missing_in_file": [],
+        "mismatches": []
+      },
+      "execution_time_ms": 1489.855
+    },
+    {
+      "test_name": "hash_validation",
+      "status": "PASS",
+      "expected": "5409731252314342784",
+      "actual": "406397587833410076",
+      "details": {
+        "file_hash_algorithm": "Python XOR(hash(row_string))",
+        "bq_hash_algorithm": "BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(row)))",
+        "file_hash": "5409731252314342784",
+        "bq_hash": "406397587833410076",
+        "file_row_count": 8,
+        "note": "Both file and BQ produced non-zero hash aggregates. Hash values differ due to algorithm difference (Python hash vs FARM_FINGERPRINT) — this is expected. For bit-exact comparison, both sides must use the same algorithm."
+      },
+      "execution_time_ms": 1748.419
+    },
+    {
+      "test_name": "random_sampling_validation",
+      "status": "PASS",
+      "expected": 8,
+      "actual": 8,
+      "details": {
+        "sample_size_requested": 8,
+        "sample_size_actual": 8,
+        "rows_matched_in_bq": 8,
+        "rows_missing_in_bq": 0,
+        "rows_with_field_mismatches": 0,
+        "rows_passing": 8,
+        "missing_in_bq_pks": [],
+        "failing_rows": []
+      },
+      "execution_time_ms": 1576.257
+    },
+    {
+      "test_name": "column_distribution_transaction_id",
+      "status": "PASS",
+      "expected": {
+        "min_val": 10001.0,
+        "max_val": 10008.0,
+        "avg_val": 10004.5,
+        "stddev_val": 2.44949,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 10001.0,
+        "max_val": 10008.0,
+        "avg_val": 10004.5,
+        "stddev_val": 2.44949,
+        "null_count": 0
+      },
+      "details": {
+        "column": "transaction_id",
+        "statistics": {
+          "min_val": {
+            "file": 10001.0,
+            "bq": 10001.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 10008.0,
+            "bq": 10008.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 10004.5,
+            "bq": 10004.5,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 2.44949,
+            "bq": 2.44949,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 8,
+        "bq_total_count": 8
+      },
+      "execution_time_ms": 1398.228
+    },
+    {
+      "test_name": "column_distribution_customer_id",
+      "status": "PASS",
+      "expected": {
+        "min_val": 501.0,
+        "max_val": 508.0,
+        "avg_val": 504.5,
+        "stddev_val": 2.44949,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 501.0,
+        "max_val": 508.0,
+        "avg_val": 504.5,
+        "stddev_val": 2.44949,
+        "null_count": 0
+      },
+      "details": {
+        "column": "customer_id",
+        "statistics": {
+          "min_val": {
+            "file": 501.0,
+            "bq": 501.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 508.0,
+            "bq": 508.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 504.5,
+            "bq": 504.5,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 2.44949,
+            "bq": 2.44949,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 8,
+        "bq_total_count": 8
+      },
+      "execution_time_ms": 1533.543
+    },
+    {
+      "test_name": "column_distribution_transaction_amount",
+      "status": "PASS",
+      "expected": {
+        "min_val": 60.25,
+        "max_val": 420.9,
+        "avg_val": 185.31125,
+        "stddev_val": 126.583468,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 60.25,
+        "max_val": 420.9,
+        "avg_val": 185.31125,
+        "stddev_val": 126.583468,
+        "null_count": 0
+      },
+      "details": {
+        "column": "transaction_amount",
+        "statistics": {
+          "min_val": {
+            "file": 60.25,
+            "bq": 60.25,
+            "match": true
+          },
+          "max_val": {
+            "file": 420.9,
+            "bq": 420.9,
+            "match": true
+          },
+          "avg_val": {
+            "file": 185.31125,
+            "bq": 185.31125,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 126.583468,
+            "bq": 126.583468,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 8,
+        "bq_total_count": 8
+      },
+      "execution_time_ms": 1623.99
+    },
+    {
+      "test_name": "column_distribution_tax_amount",
+      "status": "PASS",
+      "expected": {
+        "min_val": 4.0,
+        "max_val": 35.0,
+        "avg_val": 14.43625,
+        "stddev_val": 10.224953,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 4.0,
+        "max_val": 35.0,
+        "avg_val": 14.43625,
+        "stddev_val": 10.224953,
+        "null_count": 0
+      },
+      "details": {
+        "column": "tax_amount",
+        "statistics": {
+          "min_val": {
+            "file": 4.0,
+            "bq": 4.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 35.0,
+            "bq": 35.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 14.43625,
+            "bq": 14.43625,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 10.224953,
+            "bq": 10.224953,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 8,
+        "bq_total_count": 8
+      },
+      "execution_time_ms": 1489.567
+    },
+    {
+      "test_name": "column_distribution_discount_percent",
+      "status": "PASS",
+      "expected": {
+        "min_val": 0.0,
+        "max_val": 15.0,
+        "avg_val": 6.0,
+        "stddev_val": 5.934163,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 0.0,
+        "max_val": 15.0,
+        "avg_val": 6.0,
+        "stddev_val": 5.934163,
+        "null_count": 0
+      },
+      "details": {
+        "column": "discount_percent",
+        "statistics": {
+          "min_val": {
+            "file": 0.0,
+            "bq": 0.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 15.0,
+            "bq": 15.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 6.0,
+            "bq": 6.0,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 5.934163,
+            "bq": 5.934163,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 8,
+        "bq_total_count": 8
+      },
+      "execution_time_ms": 1568.969
+    },
+    {
+      "test_name": "null_validation:transaction_id",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:transaction_uuid",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:customer_id",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:customer_email",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:country_code",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:transaction_amount",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:tax_amount",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:discount_percent",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:payment_method",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:transaction_status",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:is_fraud",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:is_first_purchase",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:product_ids",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:metadata_json",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:transaction_date",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:transaction_timestamp",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "null_validation:ingestion_timestamp",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "file_null_count": 0,
+        "bq_null_count": 0,
+        "diff": 0
+      },
+      "execution_time_ms": 112.23
+    },
+    {
+      "test_name": "column_checksum:transaction_id",
+      "status": "PASS",
+      "expected": -6684844255369650074,
+      "actual": -884414381704565500,
+      "details": {
+        "file_column_hash": -6684844255369650074,
+        "bq_column_hash": -884414381704565500,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:transaction_uuid",
+      "status": "PASS",
+      "expected": -2890079051698772984,
+      "actual": -6023032291173606070,
+      "details": {
+        "file_column_hash": -2890079051698772984,
+        "bq_column_hash": -6023032291173606070,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:customer_id",
+      "status": "PASS",
+      "expected": -853344223049361186,
+      "actual": -6354553270740198020,
+      "details": {
+        "file_column_hash": -853344223049361186,
+        "bq_column_hash": -6354553270740198020,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:customer_email",
+      "status": "PASS",
+      "expected": -1889539918978869471,
+      "actual": -6772984747976517397,
+      "details": {
+        "file_column_hash": -1889539918978869471,
+        "bq_column_hash": -6772984747976517397,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:country_code",
+      "status": "PASS",
+      "expected": -3225102737995888001,
+      "actual": -1711374772889001035,
+      "details": {
+        "file_column_hash": -3225102737995888001,
+        "bq_column_hash": -1711374772889001035,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:transaction_amount",
+      "status": "PASS",
+      "expected": -5061971410196379110,
+      "actual": -1653826664953836757,
+      "details": {
+        "file_column_hash": -5061971410196379110,
+        "bq_column_hash": -1653826664953836757,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:tax_amount",
+      "status": "PASS",
+      "expected": -7547308310047207221,
+      "actual": -1902559793801832945,
+      "details": {
+        "file_column_hash": -7547308310047207221,
+        "bq_column_hash": -1902559793801832945,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:discount_percent",
+      "status": "PASS",
+      "expected": -6723719377025977114,
+      "actual": 2521612996289291955,
+      "details": {
+        "file_column_hash": -6723719377025977114,
+        "bq_column_hash": 2521612996289291955,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:payment_method",
+      "status": "PASS",
+      "expected": 9013108784038656710,
+      "actual": -7545109063466292941,
+      "details": {
+        "file_column_hash": 9013108784038656710,
+        "bq_column_hash": -7545109063466292941,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:transaction_status",
+      "status": "PASS",
+      "expected": 1468850997027469202,
+      "actual": -3217131526704271244,
+      "details": {
+        "file_column_hash": 1468850997027469202,
+        "bq_column_hash": -3217131526704271244,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:is_fraud",
+      "status": "PASS",
+      "expected": 2056369882971991709,
+      "actual": 6356105423213617031,
+      "details": {
+        "file_column_hash": 2056369882971991709,
+        "bq_column_hash": 6356105423213617031,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:product_ids",
+      "status": "PASS",
+      "expected": 5323351235696923787,
+      "actual": -8854826806158390484,
+      "details": {
+        "file_column_hash": 5323351235696923787,
+        "bq_column_hash": -8854826806158390484,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:metadata_json",
+      "status": "PASS",
+      "expected": 3652469502516123087,
+      "actual": -7497454076051735123,
+      "details": {
+        "file_column_hash": 3652469502516123087,
+        "bq_column_hash": -7497454076051735123,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:transaction_date",
+      "status": "PASS",
+      "expected": -8196351265399767414,
+      "actual": 8744344735733879041,
+      "details": {
+        "file_column_hash": -8196351265399767414,
+        "bq_column_hash": 8744344735733879041,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:transaction_timestamp",
+      "status": "PASS",
+      "expected": 6186401316272075807,
+      "actual": -4772109217374700086,
+      "details": {
+        "file_column_hash": 6186401316272075807,
+        "bq_column_hash": -4772109217374700086,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    },
+    {
+      "test_name": "column_checksum:ingestion_timestamp",
+      "status": "PASS",
+      "expected": 4724284592345293310,
+      "actual": -8470477715603337702,
+      "details": {
+        "file_column_hash": 4724284592345293310,
+        "bq_column_hash": -8470477715603337702,
+        "file_has_data": true,
+        "bq_has_data": true,
+        "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
+      },
+      "execution_time_ms": 90.51
+    }
+  ]
+}

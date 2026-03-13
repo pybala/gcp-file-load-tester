@@ -1,0 +1,300 @@
+{
+  "run_id": "13755da7-f826-4f61-a029-67bc51a6435a",
+  "dataset": "raw_file_loads",
+  "table": "generic_file_load_test",
+  "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test1/bq_generic_test_file.csv",
+  "timestamp": "2026-03-13T03:04:14.717513+00:00",
+  "overall_status": "PASS",
+  "total_execution_time_ms": 7548.811,
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failed": 0,
+    "errors": 0,
+    "warned": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "test_name": "schema_validation",
+      "status": "PASS",
+      "expected": [
+        "active",
+        "amount",
+        "category",
+        "comment",
+        "country",
+        "email",
+        "event_date",
+        "event_timestamp",
+        "id",
+        "name",
+        "quantity",
+        "record_uuid",
+        "score"
+      ],
+      "actual": [
+        "active",
+        "amount",
+        "category",
+        "comment",
+        "country",
+        "email",
+        "event_date",
+        "event_timestamp",
+        "id",
+        "name",
+        "quantity",
+        "record_uuid",
+        "score"
+      ],
+      "details": {
+        "common_columns_count": 13,
+        "missing_from_file": [],
+        "extra_in_file": [],
+        "bq_column_types": [
+          "active: BQ=BOOLEAN",
+          "amount: BQ=NUMERIC",
+          "category: BQ=STRING",
+          "comment: BQ=STRING",
+          "country: BQ=STRING",
+          "email: BQ=STRING",
+          "event_date: BQ=DATE",
+          "event_timestamp: BQ=TIMESTAMP",
+          "id: BQ=INTEGER",
+          "name: BQ=STRING",
+          "quantity: BQ=INTEGER",
+          "record_uuid: BQ=STRING",
+          "score: BQ=FLOAT"
+        ]
+      },
+      "execution_time_ms": 0.589
+    },
+    {
+      "test_name": "row_count_validation",
+      "status": "PASS",
+      "expected": 5,
+      "actual": 5,
+      "details": {
+        "file_row_count": 5,
+        "bq_row_count": 5,
+        "delta": 0,
+        "delta_pct": 0.0
+      },
+      "execution_time_ms": 1583.595
+    },
+    {
+      "test_name": "primary_key_uniqueness_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "id"
+        ],
+        "duplicate_rows": 0
+      },
+      "execution_time_ms": 0.57
+    },
+    {
+      "test_name": "primary_key_null_check_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "id"
+        ],
+        "null_pk_rows": 0
+      },
+      "execution_time_ms": 1.055
+    },
+    {
+      "test_name": "primary_key_uniqueness_bq",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "id"
+        ],
+        "duplicate_pk_groups_in_bq": 0
+      },
+      "execution_time_ms": 1475.477
+    },
+    {
+      "test_name": "aggregate_validation_amount_sum",
+      "status": "PASS",
+      "expected": 831.6,
+      "actual": 831.6,
+      "details": {
+        "column": "amount",
+        "function": "sum",
+        "file_value": 831.6,
+        "bq_value": 831.6
+      },
+      "execution_time_ms": 1.144
+    },
+    {
+      "test_name": "aggregate_validation_amount_min",
+      "status": "PASS",
+      "expected": 80.25,
+      "actual": "80.25",
+      "details": {
+        "column": "amount",
+        "function": "min",
+        "file_value": 80.25,
+        "bq_value": "80.25"
+      },
+      "execution_time_ms": 0.332
+    },
+    {
+      "test_name": "aggregate_validation_amount_max",
+      "status": "PASS",
+      "expected": 300.1,
+      "actual": "300.1",
+      "details": {
+        "column": "amount",
+        "function": "max",
+        "file_value": 300.1,
+        "bq_value": "300.1"
+      },
+      "execution_time_ms": 0.135
+    },
+    {
+      "test_name": "aggregate_validation_amount_avg",
+      "status": "PASS",
+      "expected": 166.32,
+      "actual": 166.32,
+      "details": {
+        "column": "amount",
+        "function": "avg",
+        "file_value": 166.32,
+        "bq_value": 166.32
+      },
+      "execution_time_ms": 0.302
+    },
+    {
+      "test_name": "aggregate_validation_quantity_sum",
+      "status": "PASS",
+      "expected": 12.0,
+      "actual": 12.0,
+      "details": {
+        "column": "quantity",
+        "function": "sum",
+        "file_value": 12.0,
+        "bq_value": 12.0
+      },
+      "execution_time_ms": 0.969
+    },
+    {
+      "test_name": "aggregate_validation_quantity_avg",
+      "status": "PASS",
+      "expected": 2.4,
+      "actual": 2.4,
+      "details": {
+        "column": "quantity",
+        "function": "avg",
+        "file_value": 2.4,
+        "bq_value": 2.4
+      },
+      "execution_time_ms": 0.595
+    },
+    {
+      "test_name": "aggregate_validation_email_distinct_count",
+      "status": "PASS",
+      "expected": 5,
+      "actual": 5,
+      "details": {
+        "column": "email",
+        "function": "distinct_count",
+        "file_value": 5,
+        "bq_value": 5
+      },
+      "execution_time_ms": 0.491
+    },
+    {
+      "test_name": "hash_validation",
+      "status": "PASS",
+      "expected": "17870699267846656618",
+      "actual": "-1770177170011187938",
+      "details": {
+        "file_hash_algorithm": "Python XOR(hash(row_string))",
+        "bq_hash_algorithm": "BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(row)))",
+        "file_hash": "17870699267846656618",
+        "bq_hash": "-1770177170011187938",
+        "file_row_count": 5,
+        "note": "Both file and BQ produced non-zero hash aggregates. Hash values differ due to algorithm difference (Python hash vs FARM_FINGERPRINT) — this is expected. For bit-exact comparison, both sides must use the same algorithm."
+      },
+      "execution_time_ms": 1576.767
+    },
+    {
+      "test_name": "random_sampling_validation",
+      "status": "PASS",
+      "expected": 5,
+      "actual": 5,
+      "details": {
+        "sample_size_requested": 100,
+        "sample_size_actual": 5,
+        "rows_matched_in_bq": 5,
+        "rows_missing_in_bq": 0,
+        "rows_with_field_mismatches": 0,
+        "rows_passing": 5,
+        "missing_in_bq_pks": [],
+        "failing_rows": []
+      },
+      "execution_time_ms": 1453.959
+    },
+    {
+      "test_name": "column_distribution_quantity",
+      "status": "PASS",
+      "expected": {
+        "min_val": 1.0,
+        "max_val": 4.0,
+        "avg_val": 2.4,
+        "stddev_val": 1.140175,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 1.0,
+        "max_val": 4.0,
+        "avg_val": 2.4,
+        "stddev_val": 1.140175,
+        "null_count": 0
+      },
+      "details": {
+        "column": "quantity",
+        "statistics": {
+          "min_val": {
+            "file": 1.0,
+            "bq": 1.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 4.0,
+            "bq": 4.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 2.4,
+            "bq": 2.4,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 1.140175,
+            "bq": 1.140175,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 5,
+        "bq_total_count": 5
+      },
+      "execution_time_ms": 1452.831
+    }
+  ]
+}

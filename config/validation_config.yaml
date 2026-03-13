@@ -1,0 +1,85 @@
+# ============================================================
+# BigQuery Data Validation Framework - Configuration File
+# ============================================================
+# All validation layers are independently togglable.
+# Supports ANY BigQuery table and ANY CSV file.
+# ============================================================
+
+# ----------------------------
+# Target BigQuery table
+# ----------------------------
+project: my-gcp-project          # GCP project ID (optional; defaults to client default)
+dataset: my_dataset               # BigQuery dataset name
+table: my_table                   # BigQuery table name
+
+# ----------------------------
+# Source CSV file
+# ----------------------------
+file_path: /path/to/data.csv      # Absolute or relative path to the CSV file
+
+# ----------------------------
+# Primary key definition
+# Supports composite keys (list of column names)
+# ----------------------------
+primary_keys:
+  - id
+  - event_date
+
+# ----------------------------
+# Partition configuration
+# Set enabled: true to activate partition validation
+# ----------------------------
+partition:
+  enabled: true
+  column: event_date              # Partition column name
+  type: DATE                      # DATE or TIMESTAMP
+
+# ----------------------------
+# Random sampling
+# Number of rows to randomly sample for comparison
+# ----------------------------
+random_sample_size: 100
+
+# ----------------------------
+# Validation layers
+# Toggle each validation independently
+# ----------------------------
+validation_layers:
+  metadata_validation: true       # Schema: columns present, no missing/extra
+  row_count_validation: true      # File row count vs BigQuery row count
+  primary_key_uniqueness: true    # Duplicate PK detection in file and BQ
+  aggregate_validation: true      # sum/min/max/avg/distinct per column
+  partition_validation: true      # Per-partition aggregation comparison
+  hash_validation: true           # Deterministic hash comparison (FARM_FINGERPRINT)
+  random_sampling: true           # Random row fetch and field-level compare
+  column_distribution: true       # min/max/avg/stddev/null_count per column
+
+# ----------------------------
+# Aggregate validation config
+# Specify columns and which functions to apply
+# Supported functions: sum, min, max, avg, distinct_count
+# ----------------------------
+aggregate_columns:
+  - column: revenue
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+  - column: quantity
+    functions:
+      - sum
+      - avg
+  - column: user_id
+    functions:
+      - distinct_count
+
+# ----------------------------
+# Column distribution config
+# Columns to compute distribution statistics on
+# Leave empty to auto-detect all numeric columns
+# ----------------------------
+distribution_columns:
+  - revenue
+  - quantity
+  - age

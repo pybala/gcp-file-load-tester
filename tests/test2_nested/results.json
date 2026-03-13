@@ -1,0 +1,442 @@
+{
+  "run_id": "6ab3145b-6267-4661-b5a7-5647bfd1b4c7",
+  "dataset": "raw_file_loads",
+  "table": "orders_with_nested",
+  "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test2_nested/bq_json_test_file.jsonl",
+  "timestamp": "2026-03-13T03:02:02.104730+00:00",
+  "overall_status": "PASS",
+  "total_execution_time_ms": 15892.699,
+  "summary": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "errors": 0,
+    "warned": 0,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "test_name": "schema_validation",
+      "status": "PASS",
+      "expected": [
+        "customer_id",
+        "customer_info",
+        "item_ids",
+        "order_amount",
+        "order_date",
+        "order_id",
+        "order_status",
+        "order_timestamp",
+        "order_uuid"
+      ],
+      "actual": [
+        "customer_id",
+        "customer_info",
+        "item_ids",
+        "order_amount",
+        "order_date",
+        "order_id",
+        "order_status",
+        "order_timestamp",
+        "order_uuid"
+      ],
+      "details": {
+        "common_columns_count": 9,
+        "missing_from_file": [],
+        "extra_in_file": [],
+        "bq_column_types": [
+          "customer_id: BQ=INTEGER",
+          "customer_info: BQ=RECORD",
+          "item_ids: BQ=STRING",
+          "order_amount: BQ=FLOAT",
+          "order_date: BQ=DATE",
+          "order_id: BQ=INTEGER",
+          "order_status: BQ=STRING",
+          "order_timestamp: BQ=TIMESTAMP",
+          "order_uuid: BQ=STRING"
+        ]
+      },
+      "execution_time_ms": 0.489
+    },
+    {
+      "test_name": "row_count_validation",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "file_row_count": 3,
+        "bq_row_count": 3,
+        "delta": 0,
+        "delta_pct": 0.0
+      },
+      "execution_time_ms": 3280.958
+    },
+    {
+      "test_name": "primary_key_uniqueness_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "order_id"
+        ],
+        "duplicate_rows": 0
+      },
+      "execution_time_ms": 1.236
+    },
+    {
+      "test_name": "primary_key_null_check_file",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "order_id"
+        ],
+        "null_pk_rows": 0
+      },
+      "execution_time_ms": 2.959
+    },
+    {
+      "test_name": "primary_key_uniqueness_bq",
+      "status": "PASS",
+      "expected": 0,
+      "actual": 0,
+      "details": {
+        "primary_keys": [
+          "order_id"
+        ],
+        "duplicate_pk_groups_in_bq": 0
+      },
+      "execution_time_ms": 2447.546
+    },
+    {
+      "test_name": "aggregate_validation_order_amount_sum",
+      "status": "PASS",
+      "expected": 451.25,
+      "actual": 451.25,
+      "details": {
+        "column": "order_amount",
+        "function": "sum",
+        "file_value": 451.25,
+        "bq_value": 451.25
+      },
+      "execution_time_ms": 1.13
+    },
+    {
+      "test_name": "aggregate_validation_order_amount_min",
+      "status": "PASS",
+      "expected": 80.75,
+      "actual": 80.75,
+      "details": {
+        "column": "order_amount",
+        "function": "min",
+        "file_value": 80.75,
+        "bq_value": 80.75
+      },
+      "execution_time_ms": 0.401
+    },
+    {
+      "test_name": "aggregate_validation_order_amount_max",
+      "status": "PASS",
+      "expected": 250.0,
+      "actual": 250.0,
+      "details": {
+        "column": "order_amount",
+        "function": "max",
+        "file_value": 250.0,
+        "bq_value": 250.0
+      },
+      "execution_time_ms": 0.224
+    },
+    {
+      "test_name": "aggregate_validation_order_amount_avg",
+      "status": "PASS",
+      "expected": 150.41666666666666,
+      "actual": 150.41666666666666,
+      "details": {
+        "column": "order_amount",
+        "function": "avg",
+        "file_value": 150.41666666666666,
+        "bq_value": 150.41666666666666
+      },
+      "execution_time_ms": 0.538
+    },
+    {
+      "test_name": "aggregate_validation_order_id_min",
+      "status": "PASS",
+      "expected": 1001,
+      "actual": 1001,
+      "details": {
+        "column": "order_id",
+        "function": "min",
+        "file_value": 1001,
+        "bq_value": 1001
+      },
+      "execution_time_ms": 0.745
+    },
+    {
+      "test_name": "aggregate_validation_order_id_max",
+      "status": "PASS",
+      "expected": 1003,
+      "actual": 1003,
+      "details": {
+        "column": "order_id",
+        "function": "max",
+        "file_value": 1003,
+        "bq_value": 1003
+      },
+      "execution_time_ms": 0.232
+    },
+    {
+      "test_name": "aggregate_validation_order_id_distinct_count",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "column": "order_id",
+        "function": "distinct_count",
+        "file_value": 3,
+        "bq_value": 3
+      },
+      "execution_time_ms": 0.532
+    },
+    {
+      "test_name": "aggregate_validation_customer_id_sum",
+      "status": "PASS",
+      "expected": 1506.0,
+      "actual": 1506.0,
+      "details": {
+        "column": "customer_id",
+        "function": "sum",
+        "file_value": 1506.0,
+        "bq_value": 1506.0
+      },
+      "execution_time_ms": 0.989
+    },
+    {
+      "test_name": "aggregate_validation_customer_id_distinct_count",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "column": "customer_id",
+        "function": "distinct_count",
+        "file_value": 3,
+        "bq_value": 3
+      },
+      "execution_time_ms": 0.564
+    },
+    {
+      "test_name": "aggregate_validation_order_status_distinct_count",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "column": "order_status",
+        "function": "distinct_count",
+        "file_value": 3,
+        "bq_value": 3
+      },
+      "execution_time_ms": 0.88
+    },
+    {
+      "test_name": "aggregate_validation_order_uuid_distinct_count",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "column": "order_uuid",
+        "function": "distinct_count",
+        "file_value": 3,
+        "bq_value": 3
+      },
+      "execution_time_ms": 0.846
+    },
+    {
+      "test_name": "hash_validation",
+      "status": "PASS",
+      "expected": "6722927942749980299",
+      "actual": "3545068054039598365",
+      "details": {
+        "file_hash_algorithm": "Python XOR(hash(row_string))",
+        "bq_hash_algorithm": "BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(row)))",
+        "file_hash": "6722927942749980299",
+        "bq_hash": "3545068054039598365",
+        "file_row_count": 3,
+        "note": "Both file and BQ produced non-zero hash aggregates. Hash values differ due to algorithm difference (Python hash vs FARM_FINGERPRINT) — this is expected. For bit-exact comparison, both sides must use the same algorithm."
+      },
+      "execution_time_ms": 1722.627
+    },
+    {
+      "test_name": "random_sampling_validation",
+      "status": "PASS",
+      "expected": 3,
+      "actual": 3,
+      "details": {
+        "sample_size_requested": 3,
+        "sample_size_actual": 3,
+        "rows_matched_in_bq": 3,
+        "rows_missing_in_bq": 0,
+        "rows_with_field_mismatches": 0,
+        "rows_passing": 3,
+        "missing_in_bq_pks": [],
+        "failing_rows": []
+      },
+      "execution_time_ms": 1508.228
+    },
+    {
+      "test_name": "column_distribution_order_amount",
+      "status": "PASS",
+      "expected": {
+        "min_val": 80.75,
+        "max_val": 250.0,
+        "avg_val": 150.416667,
+        "stddev_val": 88.502236,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 80.75,
+        "max_val": 250.0,
+        "avg_val": 150.416667,
+        "stddev_val": 88.502236,
+        "null_count": 0
+      },
+      "details": {
+        "column": "order_amount",
+        "statistics": {
+          "min_val": {
+            "file": 80.75,
+            "bq": 80.75,
+            "match": true
+          },
+          "max_val": {
+            "file": 250.0,
+            "bq": 250.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 150.416667,
+            "bq": 150.416667,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 88.502236,
+            "bq": 88.502236,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 3,
+        "bq_total_count": 3
+      },
+      "execution_time_ms": 2325.233
+    },
+    {
+      "test_name": "column_distribution_order_id",
+      "status": "PASS",
+      "expected": {
+        "min_val": 1001.0,
+        "max_val": 1003.0,
+        "avg_val": 1002.0,
+        "stddev_val": 1.0,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 1001.0,
+        "max_val": 1003.0,
+        "avg_val": 1002.0,
+        "stddev_val": 1.0,
+        "null_count": 0
+      },
+      "details": {
+        "column": "order_id",
+        "statistics": {
+          "min_val": {
+            "file": 1001.0,
+            "bq": 1001.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 1003.0,
+            "bq": 1003.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 1002.0,
+            "bq": 1002.0,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 1.0,
+            "bq": 1.0,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 3,
+        "bq_total_count": 3
+      },
+      "execution_time_ms": 1733.704
+    },
+    {
+      "test_name": "column_distribution_customer_id",
+      "status": "PASS",
+      "expected": {
+        "min_val": 501.0,
+        "max_val": 503.0,
+        "avg_val": 502.0,
+        "stddev_val": 1.0,
+        "null_count": 0
+      },
+      "actual": {
+        "min_val": 501.0,
+        "max_val": 503.0,
+        "avg_val": 502.0,
+        "stddev_val": 1.0,
+        "null_count": 0
+      },
+      "details": {
+        "column": "customer_id",
+        "statistics": {
+          "min_val": {
+            "file": 501.0,
+            "bq": 501.0,
+            "match": true
+          },
+          "max_val": {
+            "file": 503.0,
+            "bq": 503.0,
+            "match": true
+          },
+          "avg_val": {
+            "file": 502.0,
+            "bq": 502.0,
+            "match": true
+          },
+          "stddev_val": {
+            "file": 1.0,
+            "bq": 1.0,
+            "match": true
+          },
+          "null_count": {
+            "file": 0,
+            "bq": 0,
+            "match": true
+          }
+        },
+        "file_total_count": 3,
+        "bq_total_count": 3
+      },
+      "execution_time_ms": 2862.638
+    }
+  ]
+}

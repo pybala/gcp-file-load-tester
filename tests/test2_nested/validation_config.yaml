@@ -1,0 +1,107 @@
+# =============================================================================
+# Validation Config — test2_nested
+# BigQuery table: data-test-automation-489413.raw_file_loads.orders_with_nested
+# Source file:    tests/test2_nested/bq_json_test_file.jsonl
+#
+# Table schema
+# ─────────────────────────────────────────────────────────────────────────────
+#   order_timestamp  TIMESTAMP
+#   item_ids         ARRAY<STRING>
+#   customer_info    STRUCT<country STRING, email STRING, name STRING>
+#   order_id         INT64
+#   order_status     STRING
+#   customer_id      INT64
+#   order_uuid       STRING
+#   order_date       DATE
+#   order_amount     FLOAT64
+# =============================================================================
+
+project: "data-test-automation-489413"
+dataset: "raw_file_loads"
+table:   "orders_with_nested"
+file_path: "tests/test2_nested/bq_json_test_file.jsonl"
+
+# ---------------------------------------------------------------------------
+# Primary key
+# ---------------------------------------------------------------------------
+primary_keys:
+  - order_id
+
+# ---------------------------------------------------------------------------
+# Random sampling
+# ---------------------------------------------------------------------------
+random_sample_size: 3          # small file — sample all rows
+
+# ---------------------------------------------------------------------------
+# Partition (no partition on this table)
+# ---------------------------------------------------------------------------
+partition:
+  enabled: false
+
+# ---------------------------------------------------------------------------
+# Validation layers
+# Each flag can be set to false to skip that layer.
+# ---------------------------------------------------------------------------
+validation_layers:
+  metadata_validation:   true   # Schema field names + types
+  row_count_validation:  true   # File row count == BQ row count
+  primary_key_uniqueness: true  # order_id is unique & non-null
+  aggregate_validation:  true   # SUM / MIN / MAX / AVG on numeric cols
+  partition_validation:  false  # No partition on this table
+  hash_validation:       true   # Whole-table XOR fingerprint
+  random_sampling:       true   # Row-level spot check
+  column_distribution:   true   # Min / max / avg / stddev per column
+  null_validation:       true   # Null count per column (file == BQ)
+  column_checksum:       true   # Per-column hash (data-present check)
+
+# ---------------------------------------------------------------------------
+# Aggregate validation
+# Only scalar (non-nested) columns are suitable for numeric aggregates.
+# ---------------------------------------------------------------------------
+aggregate_columns:
+  - column: order_amount
+    functions: [sum, min, max, avg]
+  - column: order_id
+    functions: [min, max, distinct_count]
+  - column: customer_id
+    functions: [min, max, distinct_count]
+
+# ---------------------------------------------------------------------------
+# Distribution validation (scalar columns only)
+# ---------------------------------------------------------------------------
+distribution_columns:
+  - order_amount
+  - order_id
+  - customer_id
+
+# ---------------------------------------------------------------------------
+# Null validation
+# Leave empty to check ALL columns.
+# Explicit list is useful when you want to focus on key columns.
+# ---------------------------------------------------------------------------
+null_check_columns:
+  - order_id
+  - order_uuid
+  - customer_id
+  - order_amount
+  - order_status
+  - order_date
+  - order_timestamp
+  - customer_info
+  - item_ids
+
+# ---------------------------------------------------------------------------
+# Column-level checksum
+# Leave empty to checksum ALL columns.
+# Covers both scalar and nested (STRUCT / ARRAY) columns.
+# ---------------------------------------------------------------------------
+column_checksum_columns:
+  - order_id
+  - order_uuid
+  - customer_id
+  - order_amount
+  - order_status
+  - order_date
+  - order_timestamp
+  - customer_info
+  - item_ids

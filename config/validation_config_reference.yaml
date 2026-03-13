@@ -1,0 +1,338 @@
+# ==============================================================================
+# BigQuery Data Validation Framework — REFERENCE Configuration File
+# ==============================================================================
+# This file documents EVERY available option with descriptions, types, defaults,
+# and example values. Use it as a template when creating new test configs.
+#
+# Supported config sources:
+#   • Local file     : python main.py --config /path/to/this/file.yaml
+#   • GCS URI        : python main.py --config gs://bucket/path/config.yaml
+#   • Inline dict    : Cloud Function HTTP body { "config": { ... } }
+#   • GCS path CF    : Cloud Function HTTP body { "config_path": "gs://..." }
+# ==============================================================================
+
+
+# ------------------------------------------------------------------------------
+# [REQUIRED] BigQuery Target Table
+# ------------------------------------------------------------------------------
+
+# GCP project ID that owns the BigQuery dataset.
+# Type    : string (optional — if omitted, the project is inferred from the
+#           service account key or GOOGLE_CLOUD_PROJECT env var)
+# Example : "my-gcp-project-id"
+project: my-gcp-project-id
+
+# BigQuery dataset name.
+# Type    : string (required)
+# Example : "raw_file_loads"
+dataset: my_dataset
+
+# BigQuery table name to validate against.
+# Type    : string (required)
+# Example : "my_table"
+table: my_table
+
+
+# ------------------------------------------------------------------------------
+# [REQUIRED] Source File
+# ------------------------------------------------------------------------------
+
+# Absolute or relative path to the source CSV file, or a GCS URI.
+# The CSV must have a header row. Field delimiter is assumed to be comma.
+#
+# Type    : string (required)
+# Formats :
+#   • Local absolute  : /Users/you/data/myfile.csv
+#   • Local relative  : tests/test1/myfile.csv
+#   • GCS URI         : gs://my-bucket/data/myfile.csv
+file_path: /path/to/your/source_file.csv
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Primary Keys
+# ------------------------------------------------------------------------------
+
+# One or more column names that uniquely identify a row.
+# Used by:
+#   • primary_key_uniqueness  — detects duplicate / null PKs in file and BQ
+#   • random_sampling         — fetches exact BQ rows for field-level comparison
+#
+# Composite keys (multiple columns) are fully supported.
+# Leave as an empty list [] if the table has no natural primary key
+# (random_sampling will be skipped automatically).
+#
+# Type    : list of strings (optional, default: [])
+primary_keys:
+  - id
+  # - event_timestamp        # Uncomment for a composite key
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Partition Configuration
+# ------------------------------------------------------------------------------
+
+# Controls partition-aware validation (Layer 5).
+# When enabled, per-partition row counts in the file are compared against BQ.
+partition:
+
+  # Set to true to activate partition validation.
+  # Type    : boolean (default: false)
+  enabled: false
+
+  # The column that defines the partition.
+  # Required when enabled: true.
+  # Type    : string
+  # Example : "event_date"
+  column: event_date
+
+  # Data type of the partition column.
+  # Required when enabled: true.
+  # Allowed : "DATE" | "TIMESTAMP"
+  # Type    : string
+  type: DATE
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Random Sampling
+# ------------------------------------------------------------------------------
+
+# Number of rows to randomly select from the source file for field-level
+# comparison against BigQuery. Rows are fetched from BQ using the primary keys.
+#
+# Type    : integer >= 1 (default: 100)
+# Note    : If the file has fewer rows than this value, all file rows are used.
+#           Requires primary_keys to be defined; otherwise this layer is skipped.
+random_sample_size: 100
+
+
+# ------------------------------------------------------------------------------
+# [REQUIRED] Validation Layers
+# ------------------------------------------------------------------------------
+
+# Toggle each of the 10 validation layers independently.
+# Set a layer to false to skip it entirely (it will appear as SKIPPED in output).
+validation_layers:
+
+  # Layer 1 — Schema / Metadata Validation
+  # Compares column names between the CSV header and BigQuery schema.
+  # Detects: missing columns, extra columns.
+  # Does NOT check data types (BQ types are reported for reference only).
+  # Default : true
+  metadata_validation: true
+
+  # Layer 2 — Row Count Validation
+  # Compares total row count in the file vs total rows in the BQ table.
+  # Reports absolute delta and percentage delta.
+  # Default : true
+  row_count_validation: true
+
+  # Layer 3 — Primary Key Uniqueness & Null Check
+  # Checks:
+  #   • No duplicate PK combinations in the file
+  #   • No null values in PK columns in the file
+  #   • No duplicate PK combinations in BigQuery
+  # Skipped automatically if primary_keys is empty.
+  # Default : true
+  primary_key_uniqueness: true
+
+  # Layer 4 — Aggregate Validation
+  # Computes per-column aggregate functions on the file and compares with BQ.
+  # Columns and functions are configured under aggregate_columns below.
+  # Supported functions: sum, min, max, avg, distinct_count
+  # Default : true
+  aggregate_validation: true
+
+  # Layer 5 — Partition Validation
+  # Compares per-partition row counts between file and BQ.
+  # Only meaningful when partition.enabled is also true.
+  # If partition.enabled is false, this layer is reported as SKIPPED regardless
+  # of this flag.
+  # Default : true
+  partition_validation: false
+
+  # Layer 6 — Hash Validation
+  # Computes a deterministic aggregate hash over all rows in both file and BQ.
+  #   • File side : Python XOR of hash(row_string) for all rows
+  #   • BQ side   : BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(row)))
+  # A non-zero hash on both sides confirms all rows are present.
+  # Note: The two hash algorithms differ — exact value match is not expected.
+  #       The check confirms both sides are non-zero (non-empty dataset).
+  # Default : true
+  hash_validation: true
+
+  # Layer 7 — Random Sampling Validation
+  # Randomly selects N rows from the file (random_sample_size) and fetches
+  # the corresponding rows from BQ using primary key lookup.
+  # Performs field-level comparison for each sampled row.
+  # Requires primary_keys to be defined.
+  # Default : true
+  random_sampling: true
+
+  # Layer 8 — Column Distribution Validation
+  # Computes per-column statistics (min, max, avg, stddev, null_count) on the
+  # file and compares with the same stats from BigQuery.
+  # Columns are specified under distribution_columns below.
+  # Only NUMERIC columns should be listed here (INTEGER, FLOAT, NUMERIC).
+  # Default : true
+  column_distribution: true
+
+  # Layer 9 — Null Value Validation
+  # Counts null / missing values per column in the file (None, NaN, empty
+  # string) and in BigQuery (IS NULL), then compares the two counts.
+  # Columns are specified under null_check_columns below.
+  # Leave null_check_columns as an empty list [] to check ALL columns in the
+  # source file automatically.
+  # Works for any column type: STRING, NUMERIC, DATE, TIMESTAMP, STRUCT, ARRAY.
+  # Default : true
+  null_validation: true
+
+  # Layer 10 — Column-Level Checksum Validation
+  # Computes a hash aggregate on the file side (XOR of hash(cell_value)) and
+  # on the BQ side (BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(column)))).
+  # PASSes when both sides are non-zero, confirming data was loaded into every
+  # checked column.
+  # Columns are specified under column_checksum_columns below.
+  # Leave column_checksum_columns as an empty list [] to checksum ALL columns
+  # automatically.
+  # Works for scalar AND nested (STRUCT / ARRAY) columns.
+  # Default : true
+  column_checksum: true
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Aggregate Validation Config  (used by Layer 4)
+# ------------------------------------------------------------------------------
+
+# List of columns and the aggregate functions to apply.
+# Only columns listed here are validated in Layer 4.
+# Leave as an empty list [] to skip all aggregate checks (Layer 4 will still
+# run but produce no results).
+#
+# Supported functions:
+#   sum            — SUM of all non-null values (numeric columns only)
+#   min            — Minimum value
+#   max            — Maximum value
+#   avg            — Arithmetic mean (numeric columns only)
+#   distinct_count — COUNT(DISTINCT column)  (works for any data type)
+aggregate_columns:
+
+  # Numeric column — all four arithmetic aggregates
+  - column: amount
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  # Integer column — sum and average
+  - column: quantity
+    functions:
+      - sum
+      - avg
+
+  # String / categorical column — only distinct_count makes sense
+  - column: email
+    functions:
+      - distinct_count
+
+  # Date / timestamp column — min and max range check
+  - column: event_date
+    functions:
+      - min
+      - max
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Column Distribution Config  (used by Layer 8)
+# ------------------------------------------------------------------------------
+
+# List of columns to compute distribution statistics on.
+# For each column the following statistics are computed and compared
+# between file and BigQuery:
+#   min_val      — minimum value
+#   max_val      — maximum value
+#   avg_val      — arithmetic mean
+#   stddev_val   — population standard deviation
+#   null_count   — number of null/empty values
+#
+# IMPORTANT: Only list NUMERIC columns here (INTEGER, FLOAT, NUMERIC).
+#            String and boolean columns will cause a BigQuery query error.
+#            Leave as an empty list [] to auto-detect no columns (no distribution
+#            checks will run).
+#
+# Type    : list of strings (optional, default: [])
+distribution_columns:
+  - amount
+  - quantity
+  - score
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Null Check Config  (used by Layer 9)
+# ------------------------------------------------------------------------------
+
+# List of columns to check for null / missing values.
+# For each column the null count in the file is compared against the null count
+# in BigQuery (IS NULL).
+#
+# Leave as an empty list [] to automatically check EVERY column present in the
+# source file — no explicit list needed.
+#
+# Suitable for any column type: STRING, NUMERIC, BOOLEAN, DATE, TIMESTAMP,
+# STRUCT, ARRAY.
+#
+# Type    : list of strings (optional, default: [] → all columns)
+null_check_columns:
+  - id
+  - email
+  - amount
+  - event_date
+  # Add more columns as needed, or leave the list empty to check all columns.
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Column Checksum Config  (used by Layer 10)
+# ------------------------------------------------------------------------------
+
+# List of columns to compute per-column hash checksums on.
+# For each column a hash aggregate is computed on the file side
+# (XOR of hash(cell_value)) and on the BQ side
+# (BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(column)))).
+# The test PASSes when both sides are non-zero, confirming the column
+# was loaded with data.
+#
+# Leave as an empty list [] to automatically checksum EVERY column present in
+# the source file — no explicit list needed.
+#
+# Works for scalar AND nested (STRUCT / ARRAY) columns.
+#
+# ⚠️  XOR COLLISION LIMITATION — BOOLEAN / LOW-CARDINALITY COLUMNS
+# The XOR-based hash used on both the file side and the BQ side (BIT_XOR)
+# reduces to 0 whenever the same value appears an EVEN number of times in a
+# column.  For BOOLEAN columns (or any column where every distinct value
+# appears an even number of times), BOTH sides will return 0, which the
+# checksum validator interprets as "no data" → FAIL.
+#
+# Example: a BOOL column with exactly 4 true + 4 false rows:
+#   File  : hash("true") XOR'd 4 times = 0
+#   BQ    : FARM_FINGERPRINT("true") BIT_XOR'd 4 times = 0
+# Both hashes equal 0 even though the column has data — this is a false
+# positive failure, not a real load error.
+#
+# Workaround: exclude such columns from column_checksum_columns explicitly.
+# The column remains validated by:
+#   • null_validation       (Layer 9)  — null count comparison
+#   • aggregate_validation  (Layer 4)  — distinct_count confirms values present
+#   • random_sampling       (Layer 7)  — field-level row comparison
+#
+# Rule of thumb: avoid listing BOOL columns or any column where all distinct
+# values appear an even number of times in the dataset.
+#
+# Type    : list of strings (optional, default: [] → all columns)
+column_checksum_columns:
+  - id
+  - email
+  - amount
+  - event_date
+  # Add more columns as needed, or leave the list empty to checksum all columns.
+  # Exclude BOOL / low-cardinality columns where even-count XOR collision applies.
