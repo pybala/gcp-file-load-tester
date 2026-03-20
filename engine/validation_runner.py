@@ -24,12 +24,19 @@ from engine.result_formatter import current_utc_iso, format_output
 from validators import (
     aggregate_validator,
     column_checksum_validator,
+    datatype_validator,
     distribution_validator,
+    duplicate_row_validator,
+    enum_validator,
     hash_validator,
+    json_schema_validator,
+    non_negative_validator,
     null_validator,
     partition_validator,
     primary_key_validator,
     random_sample_validator,
+    range_validator,
+    regex_validator,
     row_count_validator,
     schema_validator,
 )
@@ -61,7 +68,7 @@ def run(config: ValidationConfig) -> Dict[str, Any]:
     # Initialise shared components
     # ------------------------------------------------------------------
     bq_client = BigQueryClient(project=config.project)
-    file_reader = FileReader(config.file_path)
+    file_reader = FileReader(config.file_path, file_format=config.file_format)
 
     # Fetch BQ schema once — shared by schema validator and others
     logger.info("Fetching BigQuery table schema...")
@@ -168,6 +175,76 @@ def run(config: ValidationConfig) -> Dict[str, Any]:
         all_results.extend(_ensure_list(chk_results))
     else:
         logger.info("[10/10] Column checksum validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 11: Data Type Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.datatype_validation:
+        logger.info("[11/17] Running data type validation...")
+        dt_results = datatype_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(dt_results))
+    else:
+        logger.info("[11/17] Data type validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 12: Enum Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.enum_validation:
+        logger.info("[12/17] Running enum validation...")
+        enum_results = enum_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(enum_results))
+    else:
+        logger.info("[12/17] Enum validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 13: Range Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.range_validation:
+        logger.info("[13/17] Running range validation...")
+        range_results = range_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(range_results))
+    else:
+        logger.info("[13/17] Range validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 14: Regex Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.regex_validation:
+        logger.info("[14/17] Running regex validation...")
+        regex_results = regex_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(regex_results))
+    else:
+        logger.info("[14/17] Regex validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 15: Duplicate Row Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.duplicate_row_validation:
+        logger.info("[15/17] Running duplicate row validation...")
+        dup_result = duplicate_row_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(dup_result))
+    else:
+        logger.info("[15/17] Duplicate row validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 16: JSON Schema Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.json_schema_validation:
+        logger.info("[16/17] Running JSON schema validation...")
+        js_results = json_schema_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(js_results))
+    else:
+        logger.info("[16/17] JSON schema validation SKIPPED (disabled in config)")
+
+    # ------------------------------------------------------------------
+    # Layer 17: Non-Negative Validation (file-side)
+    # ------------------------------------------------------------------
+    if layers.non_negative_validation:
+        logger.info("[17/17] Running non-negative validation...")
+        nn_results = non_negative_validator.validate(file_reader, config)
+        all_results.extend(_ensure_list(nn_results))
+    else:
+        logger.info("[17/17] Non-negative validation SKIPPED (disabled in config)")
 
     # ------------------------------------------------------------------
     # Format and return final output

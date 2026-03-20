@@ -9,6 +9,7 @@ The annotated reference file is at [`config/validation_config_reference.yaml`](c
 ## Table of Contents
 
 - [Top-Level Fields](#top-level-fields)
+- [file\_format](#file_format)
 - [primary\_keys](#primary_keys)
 - [partition](#partition)
 - [random\_sample\_size](#random_sample_size)
@@ -30,7 +31,8 @@ The annotated reference file is at [`config/validation_config_reference.yaml`](c
 | `project` | string | No | Inferred from credentials | GCP project ID that owns the BigQuery dataset. If omitted, the SDK infers the project from the service account key or the `GOOGLE_CLOUD_PROJECT` environment variable. |
 | `dataset` | string | **Yes** | — | BigQuery dataset name. |
 | `table` | string | **Yes** | — | BigQuery table name. |
-| `file_path` | string | **Yes** | — | Path to the source data file. Accepts a local absolute path, a local relative path, or a GCS URI (`gs://`). Supported formats: `.csv` (comma-delimited) and `.jsonl` (newline-delimited JSON). Format is detected automatically from the file extension. |
+| `file_path` | string | **Yes** | — | Path to the source data file. Accepts a local absolute path, a local relative path, or a GCS URI (`gs://`). Supported formats: `.csv`, `.json`, `.jsonl`, `.ndjson`. Format is auto-detected from the file extension unless overridden by `file_format.file_type`. |
+| `file_format` | object | No | See defaults | File parsing options: type, delimiter, quoting, encoding, etc. See [file\_format](#file_format). |
 | `primary_keys` | list\<string\> | No | `[]` | Column names that form the primary key. See [primary\_keys](#primary_keys). |
 | `partition` | object | No | `{enabled: false}` | Partition configuration. See [partition](#partition). |
 | `random_sample_size` | integer | No | `100` | Number of rows to sample for Layer 7. See [random\_sample\_size](#random_sample_size). |
@@ -39,6 +41,100 @@ The annotated reference file is at [`config/validation_config_reference.yaml`](c
 | `distribution_columns` | list\<string\> | No | `[]` | Numeric column names for Layer 8. See [distribution\_columns](#distribution_columns). |
 | `null_check_columns` | list\<string\> | No | `[]` | Columns to null-check in Layer 9. Empty = all columns. See [null\_check\_columns](#null_check_columns). |
 | `column_checksum_columns` | list\<string\> | No | `[]` | Columns to checksum in Layer 10. Empty = all columns. See [column\_checksum\_columns](#column_checksum_columns). |
+
+---
+
+## `file_format`
+
+Controls how the source file is opened and parsed. The entire block is optional — when omitted the framework auto-detects the format from the file extension and applies pandas defaults.
+
+```yaml
+file_format:
+  file_type: csv        # csv | json | jsonl  (auto-detected if omitted)
+  delimiter: ","        # field separator
+  enclosed_by: '"'      # quote / enclosure character
+  escape_char: ~        # escape character (null = doubled-quote convention)
+  has_header: true      # true → first row is the header
+  skip_rows: 0          # rows to skip before the header
+  encoding: utf-8       # file character encoding
+  null_values:          # extra strings treated as NULL
+    - ""
+    - "NULL"
+    - "N/A"
+    - "\\N"
+```
+
+### Sub-fields
+
+| Field | Type | Default | Applies to | Description |
+|-------|------|---------|------------|-------------|
+| `file_type` | `csv` \| `json` \| `jsonl` | auto-detect | all | Explicitly set the file format. Overrides extension-based detection. |
+| `delimiter` | string | `,` | CSV | Field separator character. Use `"\t"` for TSV, `"|"` for pipe-delimited. |
+| `enclosed_by` | string | `"` | CSV | Quote / enclosure character that wraps fields containing the delimiter or newlines. |
+| `escape_char` | string \| null | `null` | CSV | Escape character for the `enclosed_by` character inside quoted fields. `null` means the quote character is doubled instead (standard CSV behaviour). |
+| `has_header` | boolean | `true` | CSV | Set to `false` for headerless files. Column names become integer indices (`0`, `1`, `2`, …). |
+| `skip_rows` | integer ≥ 0 | `0` | CSV | Number of rows to skip at the top of the file **before** the header. Useful for files with metadata preamble rows. |
+| `null_values` | list\<string\> | `[]` | CSV | Additional strings to interpret as null/missing. pandas' built-in NA set (empty string, `NaN`, `None`, etc.) is always applied on top of these. |
+| `encoding` | string | `utf-8` | all | File character encoding. Common values: `utf-8`, `utf-8-sig` (BOM-aware), `latin-1`, `iso-8859-1`, `cp1252`. |
+
+### Format auto-detection rules
+
+When `file_type` is omitted, the format is inferred from the file extension:
+
+| Extension | Detected format |
+|-----------|----------------|
+| `.csv` | CSV |
+| `.jsonl` | JSONL (newline-delimited JSON) |
+| `.ndjson` | JSONL (newline-delimited JSON) |
+| `.json` | JSONL if first non-empty line starts with `{`, otherwise JSON array |
+
+### Examples
+
+**Pipe-delimited file with a BOM:**
+```yaml
+file_format:
+  file_type: csv
+  delimiter: "|"
+  encoding: utf-8-sig
+```
+
+**Tab-delimited file with backslash escaping:**
+```yaml
+file_format:
+  file_type: csv
+  delimiter: "\t"
+  enclosed_by: '"'
+  escape_char: "\\"
+```
+
+**CSV with metadata preamble rows (skip 3 rows before the header):**
+```yaml
+file_format:
+  file_type: csv
+  skip_rows: 3
+```
+
+**Explicit JSONL (redundant for `.jsonl` extension but documents intent):**
+```yaml
+file_format:
+  file_type: jsonl
+  encoding: utf-8
+```
+
+**Custom null sentinel values:**
+```yaml
+file_format:
+  file_type: csv
+  null_values:
+    - ""
+    - "NULL"
+    - "null"
+    - "N/A"
+    - "NA"
+    - "\\N"
+    - "none"
+    - "nan"
+```
 
 ---
 
@@ -356,7 +452,7 @@ column_checksum_columns: []
 
 ## Config Loading Modes
 
-The same YAML schema is supported in all three loading modes:
+The same YAML schema is supported in all loading modes:
 
 ### 1. Local CLI — file path
 
@@ -404,6 +500,30 @@ Requires `google-cloud-storage` and valid GCP credentials.
 
 ---
 
+## Metadata Destination
+
+After every run the framework writes to three BigQuery tracking tables. The destination is controlled by CLI flags or environment variables — **not** by the YAML config file.
+
+| Control | CLI flag | Environment variable | Default |
+|---------|----------|----------------------|---------|
+| GCP project | `--metadata-project PROJECT_ID` | `METADATA_PROJECT` | `data-test-automation-489413` |
+| BQ dataset | `--metadata-dataset DATASET` | `METADATA_DATASET` | `validation_ds` |
+| Skip writes | `--no-metadata` | _(none)_ | writes enabled |
+
+The three tables written are:
+
+| Table | Description |
+|-------|-------------|
+| `validation_configs` | One row per unique YAML config (upserted by `config_id`) |
+| `validation_runs` | One row per execution (`run_id`, `config_id`, `config_name`, status, summary counts, timing) |
+| `validation_tests` | One row per individual test result (linked to `run_id`) |
+
+Metadata writes are **best-effort** — failures are logged as warnings and never affect the exit code or JSON output.
+
+See [README.md — BigQuery Metadata Tables](README.md#bigquery-metadata-tables) for full column reference and example queries.
+
+---
+
 ## Full Example
 
 ```yaml
@@ -414,6 +534,21 @@ table: sales_transactions
 
 # Source file
 file_path: /data/sales_transactions_2026_03.csv
+
+# File format options (pipe-delimited, UTF-8-BOM)
+file_format:
+  file_type: csv
+  delimiter: "|"
+  enclosed_by: '"'
+  escape_char: ~
+  has_header: true
+  skip_rows: 0
+  encoding: utf-8-sig
+  null_values:
+    - ""
+    - "NULL"
+    - "N/A"
+    - "\\N"
 
 # Primary key (composite)
 primary_keys:
@@ -478,5 +613,7 @@ dataset: my_dataset
 table: my_table
 file_path: /path/to/data.csv
 ```
+
+The `file_format` block is entirely optional. When omitted, the format is auto-detected from the file extension (`.csv` → CSV with comma delimiter; `.jsonl` → JSONL; `.json` → JSON array or JSONL by content heuristic). All CSV parsing defaults (comma delimiter, double-quote enclosure, UTF-8, header on first row) are applied automatically.
 
 All validation layers default to `true` but no aggregate, distribution, null-check, or checksum columns are configured, so Layers 4, 8, 9, and 10 produce no sub-results (or check all columns for Layers 9 and 10 when `null_check_columns` and `column_checksum_columns` are omitted). Layers 3 and 7 are silently skipped because `primary_keys` is empty.

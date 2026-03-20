@@ -37,8 +37,9 @@ table: my_table
 # [REQUIRED] Source File
 # ------------------------------------------------------------------------------
 
-# Absolute or relative path to the source CSV file, or a GCS URI.
-# The CSV must have a header row. Field delimiter is assumed to be comma.
+# Absolute or relative path to the source file, or a GCS URI.
+# Supported formats: CSV, JSON (array), JSONL (newline-delimited JSON).
+# For CSV files a header row is required by default.
 #
 # Type    : string (required)
 # Formats :
@@ -46,6 +47,84 @@ table: my_table
 #   • Local relative  : tests/test1/myfile.csv
 #   • GCS URI         : gs://my-bucket/data/myfile.csv
 file_path: /path/to/your/source_file.csv
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] File Format Options
+# ------------------------------------------------------------------------------
+# Controls how the source file is read.  All sub-keys are optional — omit any
+# key to use the documented default.  The section itself is also optional; if
+# the entire `file_format` block is absent the framework auto-detects the
+# format from the file extension and falls back to pandas defaults.
+
+file_format:
+
+  # Type of source file.
+  # Auto-detected from the file extension when omitted:
+  #   .csv              → csv
+  #   .jsonl / .ndjson  → jsonl
+  #   .json             → json  (or jsonl if first line starts with '{')
+  #
+  # Type    : string (optional)
+  # Allowed : "csv" | "json" | "jsonl"
+  # Default : auto-detect from extension
+  file_type: csv
+
+  # ── CSV-specific options ────────────────────────────────────────────────────
+
+  # Field delimiter character.
+  # Type    : string (optional, default: ",")
+  # Examples: ","  |  "|"  |  "\t"  (tab)  |  ";"  |  ":"
+  delimiter: ","
+
+  # Quote / enclosure character used to wrap fields that contain the
+  # delimiter character, newlines, or the quote character itself.
+  # Type    : string, single character (optional, default: '"')
+  # Examples: '"'  (double-quote)  |  "'"  (single-quote)
+  enclosed_by: '"'
+
+  # Escape character for CSV files.
+  # When set, this character is used to escape the enclosed_by character
+  # inside a quoted field instead of doubling it.
+  # Type    : string, single character or null (optional, default: null)
+  # Example : "\\"   (backslash)
+  escape_char: ~
+
+  # Whether the first row of a CSV file is a header row.
+  # Set to false only for headerless CSV files (column names must then be
+  # inferred from the BigQuery schema or provided as integers 0, 1, 2 …).
+  # Type    : boolean (optional, default: true)
+  has_header: true
+
+  # Number of rows to skip at the very top of the file BEFORE the header.
+  # Useful when source files contain metadata lines above the column headers.
+  # Note: these rows are skipped entirely (not counted as data rows).
+  # Type    : integer >= 0 (optional, default: 0)
+  skip_rows: 0
+
+  # String values to treat as null / missing in CSV files.
+  # In addition to the values listed here, pandas always treats truly empty
+  # fields as null by default.
+  # Type    : list of strings (optional, default: pandas built-in NA values)
+  # Common  : ["", "NULL", "null", "N/A", "NA", "\\N", "none", "nan", "NaN"]
+  null_values:
+    - ""
+    - "NULL"
+    - "null"
+    - "N/A"
+    - "NA"
+    - "\\N"
+    - "none"
+    - "nan"
+    - "NaN"
+
+  # ── General options (apply to all file types) ───────────────────────────────
+
+  # Character encoding of the source file.
+  # Type    : string (optional, default: "utf-8")
+  # Examples: "utf-8"  |  "utf-8-sig"  (BOM-aware)  |  "latin-1"  |
+  #           "iso-8859-1"  |  "cp1252"
+  encoding: utf-8
 
 
 # ------------------------------------------------------------------------------
@@ -109,12 +188,12 @@ random_sample_size: 100
 # [REQUIRED] Validation Layers
 # ------------------------------------------------------------------------------
 
-# Toggle each of the 10 validation layers independently.
+# Toggle each of the 17 validation layers independently.
 # Set a layer to false to skip it entirely (it will appear as SKIPPED in output).
 validation_layers:
 
   # Layer 1 — Schema / Metadata Validation
-  # Compares column names between the CSV header and BigQuery schema.
+  # Compares column names between the file header and BigQuery schema.
   # Detects: missing columns, extra columns.
   # Does NOT check data types (BQ types are reported for reference only).
   # Default : true
@@ -198,6 +277,60 @@ validation_layers:
   # Default : true
   column_checksum: true
 
+  # ── Extended Layers (file-side data quality checks) ─────────────────────
+
+  # Layer 11 — Data Type Validation
+  # Checks that each cell in the declared columns is parseable as the
+  # expected type (integer, float, string, boolean, date, timestamp).
+  # Prevents silent type corruption before the data reaches BigQuery.
+  # Columns and types are configured under datatype_columns below.
+  # Default : true
+  datatype_validation: true
+
+  # Layer 12 — Enum Validation
+  # Checks that each value in a categorical column is a member of the
+  # declared allowed set.  Catches bad categorical values early.
+  # Columns and allowed sets are configured under enum_columns below.
+  # Default : true
+  enum_validation: true
+
+  # Layer 13 — Range Validation
+  # Checks that numeric column values fall within the declared [min, max]
+  # bounds (both bounds are inclusive and optional individually).
+  # Prevents out-of-bounds values such as negative ages or >100% rates.
+  # Columns and bounds are configured under range_columns below.
+  # Default : true
+  range_validation: true
+
+  # Layer 14 — Regex Validation
+  # Checks that each non-null string column value fully matches the declared
+  # regular expression.  Useful for email, phone, UUID, ISO date, etc.
+  # Columns and patterns are configured under regex_columns below.
+  # Default : true
+  regex_validation: true
+
+  # Layer 15 — Duplicate Row Validation
+  # Checks that the source file contains no fully duplicate rows (all columns
+  # identical).  Distinct from Layer 3 which only checks PK columns.
+  # No additional column config required.
+  # Default : true
+  duplicate_row_validation: true
+
+  # Layer 16 — JSON Schema Validation
+  # Checks that each JSON / STRUCT column value is a valid JSON object and
+  # contains all required keys declared in json_schema_columns.
+  # Example: customer_info must always carry keys "name" and "age".
+  # Works with both dict-typed cells (JSONL) and JSON-string cells (CSV).
+  # Default : true
+  json_schema_validation: true
+
+  # Layer 17 — Non-Negative Validation
+  # Checks that numeric column values are >= 0.
+  # Useful for amounts, quantities, counts, prices, durations.
+  # Columns are configured under non_negative_columns below.
+  # Default : true
+  non_negative_validation: true
+
 
 # ------------------------------------------------------------------------------
 # [OPTIONAL] Aggregate Validation Config  (used by Layer 4)
@@ -214,6 +347,9 @@ validation_layers:
 #   max            — Maximum value
 #   avg            — Arithmetic mean (numeric columns only)
 #   distinct_count — COUNT(DISTINCT column)  (works for any data type)
+#
+# NOTE: "count" is NOT a supported function.  Use "distinct_count" to count
+#       distinct values, or use Layer 2 (row_count_validation) for total rows.
 aggregate_columns:
 
   # Numeric column — all four arithmetic aggregates
@@ -288,6 +424,174 @@ null_check_columns:
   - amount
   - event_date
   # Add more columns as needed, or leave the list empty to check all columns.
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Data Type Validation Config  (used by Layer 11)
+# ------------------------------------------------------------------------------
+
+# List of columns and their expected data types.
+# For each cell the validator checks whether the value is parseable as the
+# declared type.  Null / empty values are skipped (use Layer 9 for null checks).
+#
+# Supported expected_type values:
+#   integer   — whole number (int or integer-parsable string, e.g. "42")
+#   float     — any numeric value (int or float, e.g. "3.14")
+#   string    — any non-null value is valid (always passes for non-null cells)
+#   boolean   — true/false/1/0/yes/no (case-insensitive)
+#   date      — YYYY-MM-DD format
+#   timestamp — YYYY-MM-DD HH:MM:SS or ISO-8601
+#
+# Type    : list of {column, expected_type} objects (optional, default: [])
+datatype_columns:
+  - column: id
+    expected_type: integer
+  - column: amount
+    expected_type: float
+  - column: email
+    expected_type: string
+  - column: is_active
+    expected_type: boolean
+  - column: event_date
+    expected_type: date
+  - column: created_at
+    expected_type: timestamp
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Enum Validation Config  (used by Layer 12)
+# ------------------------------------------------------------------------------
+
+# List of columns and the complete set of allowed values.
+# Every non-null value in the column must be a member of allowed_values.
+# Values are compared as strings (case-sensitive).
+#
+# Useful for: status fields, country codes, payment methods, categories, etc.
+#
+# Type    : list of {column, allowed_values} objects (optional, default: [])
+enum_columns:
+  - column: status
+    allowed_values:
+      - active
+      - inactive
+      - pending
+
+  - column: payment_method
+    allowed_values:
+      - credit_card
+      - debit_card
+      - bank_transfer
+      - paypal
+
+  - column: country_code
+    allowed_values:
+      - US
+      - GB
+      - IN
+      - DE
+      - FR
+      - AU
+      - CA
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Range Validation Config  (used by Layer 13)
+# ------------------------------------------------------------------------------
+
+# List of columns with inclusive numeric bounds.
+# At least one of min or max must be provided per entry.
+# Non-numeric values in the column are skipped (use Layer 11 for type checks).
+#
+# Common use cases:
+#   amount        — min: 0          (no negative amounts)
+#   discount_pct  — min: 0, max: 100
+#   age           — min: 0, max: 150
+#   score         — min: 0.0, max: 1.0
+#
+# Type    : list of {column, min, max} objects (optional, default: [])
+range_columns:
+  - column: amount
+    min: 0
+    max: 100000
+
+  - column: discount_percent
+    min: 0
+    max: 100
+
+  - column: quantity
+    min: 1
+    max: 9999
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Regex Validation Config  (used by Layer 14)
+# ------------------------------------------------------------------------------
+
+# List of columns and their expected format patterns.
+# Uses Python re.fullmatch — the pattern must match the entire cell value.
+# Wrap in .* if a substring match is intended.
+# Null / empty values are skipped automatically.
+#
+# Common patterns:
+#   Email    : ^[^@\s]+@[^@\s]+\.[^@\s]+$
+#   UUID v4  : ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+#   ISO date : ^\d{4}-\d{2}-\d{2}$
+#   Phone    : ^\+?[1-9]\d{7,14}$
+#   ZIP code : ^\d{5}(-\d{4})?$
+#   2-letter country code : ^[A-Z]{2}$
+#
+# Type    : list of {column, pattern} objects (optional, default: [])
+regex_columns:
+  - column: email
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+
+  - column: transaction_uuid
+    pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+
+  - column: country_code
+    pattern: "^[A-Z]{2}$"
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] JSON Schema Validation Config  (used by Layer 16)
+# ------------------------------------------------------------------------------
+
+# List of JSON / STRUCT columns and the keys that must be present in every row.
+# Works for both:
+#   • dict-typed cells (JSONL files where FileReader already parsed the JSON)
+#   • JSON-string cells (CSV files where the JSON is stored as a string)
+#
+# Example: customer_info must contain name and age in every row.
+#
+# Type    : list of {column, required_keys} objects (optional, default: [])
+json_schema_columns:
+  - column: customer_info
+    required_keys:
+      - name
+      - age
+
+  - column: metadata_json
+    required_keys:
+      - source
+      - version
+
+
+# ------------------------------------------------------------------------------
+# [OPTIONAL] Non-Negative Validation Config  (used by Layer 17)
+# ------------------------------------------------------------------------------
+
+# List of numeric columns that must never contain negative values (value >= 0).
+# Non-parsable (non-numeric) values are skipped automatically.
+#
+# Typical columns: amount, quantity, price, tax_amount, discount, duration.
+# For tighter bounds (e.g. > 0 or maximum cap) use range_columns instead.
+#
+# Type    : list of strings (optional, default: [])
+non_negative_columns:
+  - amount
+  - quantity
+  - tax_amount
+  - discount_percent
 
 
 # ------------------------------------------------------------------------------

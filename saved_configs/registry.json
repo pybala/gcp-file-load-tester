@@ -1,0 +1,88 @@
+{
+  "96205ae8-3138-41a7-82af-79e8ff61ad66": {
+    "name": "Test Config",
+    "blocks": [
+      {
+        "id": "b1",
+        "type": "metadata_validation",
+        "label": "Metadata Validation"
+      },
+      {
+        "id": "b2",
+        "type": "row_count_validation",
+        "label": "Row Count Validation"
+      },
+      {
+        "id": "b3",
+        "type": "primary_key_uniqueness",
+        "label": "Primary Key Validation"
+      },
+      {
+        "id": "b4",
+        "type": "hash_validation",
+        "label": "Hash Validation"
+      },
+      {
+        "id": "b5",
+        "type": "random_sampling",
+        "label": "Random Sampling"
+      }
+    ],
+    "created_at": "2026-03-16T15:33:13.325034+00:00",
+    "updated_at": "2026-03-16T15:33:13.325034+00:00"
+  },
+  "74fc01b6-9ffe-4640-b065-31933b1041ae": {
+    "name": "ui-csv-test-1",
+    "blocks": [
+      {
+        "id": "block-1773921189707",
+        "label": "Metadata Validation",
+        "type": "metadata_validation"
+      },
+      {
+        "id": "block-1773921193986",
+        "label": "Row Count Validation",
+        "type": "row_count_validation"
+      },
+      {
+        "id": "block-1773921198777",
+        "label": "Primary Key Validation",
+        "type": "primary_key_uniqueness"
+      },
+      {
+        "id": "block-1773921207290",
+        "label": "Aggregate Validation",
+        "type": "aggregate_validation"
+      }
+    ],
+    "created_at": "2026-03-19T11:54:22.555297+00:00",
+    "updated_at": "2026-03-19T12:13:38.413175+00:00"
+  },
+  "ce7e94b2-331b-4648-8f5f-7a4630ad2322": {
+    "name": "ui-csv-test-1",
+    "blocks": [
+      {
+        "id": "block-1773929531927",
+        "type": "metadata_validation",
+        "label": "Metadata Validation"
+      },
+      {
+        "id": "block-1773929533644",
+        "type": "row_count_validation",
+        "label": "Row Count Validation"
+      },
+      {
+        "id": "block-1773929536402",
+        "type": "primary_key_uniqueness",
+        "label": "Primary Key Validation"
+      },
+      {
+        "id": "block-1773929538612",
+        "type": "aggregate_validation",
+        "label": "Aggregate Validation"
+      }
+    ],
+    "created_at": "2026-03-19T14:13:08.456574+00:00",
+    "updated_at": "2026-03-19T14:13:08.456574+00:00"
+  }
+}

@@ -1,0 +1,26 @@
+project: test-project
+dataset: test_ds
+table: test_table
+file_path: /test.csv
+primary_keys:
+- id
+partition:
+  enabled: false
+  column: ''
+  type: DATE
+random_sample_size: 100
+validation_layers:
+  metadata_validation: true
+  row_count_validation: true
+  primary_key_uniqueness: true
+  aggregate_validation: false
+  partition_validation: false
+  hash_validation: true
+  random_sampling: false
+  column_distribution: false
+  null_validation: false
+  column_checksum: false
+aggregate_columns: []
+distribution_columns: []
+null_check_columns: []
+column_checksum_columns: []

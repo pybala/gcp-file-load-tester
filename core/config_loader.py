@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Literal
 
 import yaml
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,58 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Pydantic models — one per config section
 # ---------------------------------------------------------------------------
+
+class FileFormatConfig(BaseModel):
+    """
+    File format settings controlling how the source file is parsed.
+
+    All fields are optional — absent fields fall back to the documented
+    defaults.  The entire section may be omitted from the YAML; when it is,
+    file_reader.py auto-detects the format from the file extension.
+    """
+
+    # File type — overrides extension-based auto-detection when set.
+    # Allowed: "csv" | "json" | "jsonl"
+    file_type: Optional[Literal["csv", "json", "jsonl"]] = None
+
+    # ── CSV options ──────────────────────────────────────────────────────────
+
+    # Field separator character (default: comma).
+    # Use "\t" for tab-delimited files.
+    delimiter: str = ","
+
+    # Quote / enclosure character (default: double-quote).
+    enclosed_by: str = '"'
+
+    # Escape character (default: None → enclosed_by doubling).
+    escape_char: Optional[str] = None
+
+    # True  → first data row is a header (default behaviour).
+    # False → no header; column names will be integer indices.
+    has_header: bool = True
+
+    # Rows to skip at the very top of the file BEFORE the header row.
+    # Must be >= 0.
+    skip_rows: int = Field(default=0, ge=0)
+
+    # Additional strings to interpret as null / missing.
+    # pandas' own built-in NA list is always applied; this extends it.
+    null_values: List[str] = Field(default_factory=list)
+
+    # ── General options ──────────────────────────────────────────────────────
+
+    # File encoding (default: utf-8).
+    encoding: str = "utf-8"
+
+    @field_validator("delimiter", "enclosed_by")
+    @classmethod
+    def _single_char_or_special(cls, v: str) -> str:
+        """Allow single-char values or common escape sequences like \\t."""
+        decoded = v.encode("raw_unicode_escape").decode("unicode_escape")
+        return decoded
+
+    model_config = {"populate_by_name": True, "extra": "ignore"}
+
 
 class PartitionConfig(BaseModel):
     """Partition settings for partition-aware validation."""
@@ -54,6 +106,14 @@ class ValidationLayers(BaseModel):
     column_distribution: bool = True
     null_validation: bool = True
     column_checksum: bool = True
+    # Extended validation layers (file-side quality checks)
+    datatype_validation: bool = True
+    enum_validation: bool = True
+    range_validation: bool = True
+    regex_validation: bool = True
+    duplicate_row_validation: bool = True
+    json_schema_validation: bool = True
+    non_negative_validation: bool = True
 
 
 class AggregateColumnConfig(BaseModel):
@@ -62,6 +122,46 @@ class AggregateColumnConfig(BaseModel):
     functions: List[Literal["sum", "min", "max", "avg", "distinct_count"]] = Field(
         default_factory=lambda: ["sum", "min", "max", "avg"]
     )
+    # NOTE: "count" is NOT a supported function — use "distinct_count" instead.
+
+
+class DataTypeColumnConfig(BaseModel):
+    """Per-column data type declaration for datatype_validation."""
+    column: str
+    expected_type: Literal["integer", "float", "string", "boolean", "date", "timestamp"]
+
+
+class EnumColumnConfig(BaseModel):
+    """Per-column allowed values declaration for enum_validation."""
+    column: str
+    allowed_values: List[Any]
+
+
+class RangeColumnConfig(BaseModel):
+    """Per-column numeric range bounds for range_validation."""
+    column: str
+    min: Optional[float] = None
+    max: Optional[float] = None
+
+    @model_validator(mode="after")
+    def check_at_least_one_bound(self) -> "RangeColumnConfig":
+        if self.min is None and self.max is None:
+            raise ValueError(
+                f"range_columns entry for '{self.column}' must specify at least one of: min, max"
+            )
+        return self
+
+
+class RegexColumnConfig(BaseModel):
+    """Per-column regex pattern for regex_validation."""
+    column: str
+    pattern: str
+
+
+class JsonSchemaColumnConfig(BaseModel):
+    """Per-column required JSON keys for json_schema_validation."""
+    column: str
+    required_keys: List[str]
 
 
 class ValidationConfig(BaseModel):
@@ -70,6 +170,9 @@ class ValidationConfig(BaseModel):
     dataset: str                                      # BigQuery dataset name
     table: str                                        # BigQuery table name
     file_path: str                                    # Local path or gs:// URI
+    file_format: FileFormatConfig = Field(           # File format / parsing options
+        default_factory=FileFormatConfig
+    )
     primary_keys: List[str] = Field(default_factory=list)
     partition: PartitionConfig = Field(default_factory=PartitionConfig)
     random_sample_size: int = Field(default=100, ge=1)
@@ -90,6 +193,45 @@ class ValidationConfig(BaseModel):
             "Leave empty to checksum ALL columns from the source file."
         ),
     )
+    # Extended validation config fields
+    datatype_columns: List[DataTypeColumnConfig] = Field(
+        default_factory=list,
+        description="Per-column expected data type declarations for datatype_validation.",
+    )
+    enum_columns: List[EnumColumnConfig] = Field(
+        default_factory=list,
+        description="Per-column allowed value sets for enum_validation.",
+    )
+    range_columns: List[RangeColumnConfig] = Field(
+        default_factory=list,
+        description="Per-column numeric range bounds (min/max) for range_validation.",
+    )
+    regex_columns: List[RegexColumnConfig] = Field(
+        default_factory=list,
+        description="Per-column regex patterns for regex_validation.",
+    )
+    json_schema_columns: List[JsonSchemaColumnConfig] = Field(
+        default_factory=list,
+        description="Per-column required JSON key declarations for json_schema_validation.",
+    )
+    non_negative_columns: List[str] = Field(
+        default_factory=list,
+        description="Columns that must contain only non-negative numeric values.",
+    )
+
+    # Populated by load_config() — not read from the YAML file itself
+    config_path: Optional[str] = Field(
+        default=None,
+        description="File path or GCS URI used to load this config (set at runtime).",
+        exclude=True,
+    )
+    config_yaml: Optional[str] = Field(
+        default=None,
+        description="Raw YAML text of this config file (set at runtime).",
+        exclude=True,
+    )
+
+    model_config = {"populate_by_name": True, "extra": "ignore"}
 
     @model_validator(mode="after")
     def check_primary_keys_for_random_sampling(self) -> "ValidationConfig":
@@ -126,16 +268,22 @@ def load_config(config_path: str) -> ValidationConfig:
     """
     logger.info("Loading configuration from: %s", config_path)
 
+    raw_yaml_text: Optional[str] = None
+
     if config_path.startswith("gs://"):
-        raw = _load_yaml_from_gcs(config_path)
+        raw, raw_yaml_text = _load_yaml_from_gcs(config_path)
     else:
         path = Path(config_path)
         if not path.exists():
             raise FileNotFoundError(f"Configuration file not found: {config_path}")
-        with open(path, "r") as fh:
-            raw = yaml.safe_load(fh)
+        with open(path, "r", encoding="utf-8") as fh:
+            raw_yaml_text = fh.read()
+        raw = yaml.safe_load(raw_yaml_text)
 
-    return _parse_config(raw)
+    config = _parse_config(raw)
+    config.config_path = config_path
+    config.config_yaml = raw_yaml_text
+    return config
 
 
 def load_config_from_dict(data: Dict[str, Any]) -> ValidationConfig:
@@ -175,7 +323,7 @@ def _parse_config(raw: Any) -> ValidationConfig:
     return config
 
 
-def _load_yaml_from_gcs(gcs_uri: str) -> Dict[str, Any]:
+def _load_yaml_from_gcs(gcs_uri: str):
     """
     Download a YAML config file from GCS and parse it.
 
@@ -183,7 +331,7 @@ def _load_yaml_from_gcs(gcs_uri: str) -> Dict[str, Any]:
         gcs_uri: GCS URI in the form gs://bucket/path/config.yaml.
 
     Returns:
-        Parsed YAML dict.
+        Tuple of (parsed YAML dict, raw YAML text string).
 
     Raises:
         ImportError: If google-cloud-storage is not installed.
@@ -207,4 +355,4 @@ def _load_yaml_from_gcs(gcs_uri: str) -> Dict[str, Any]:
     yaml_content = blob.download_as_text(encoding="utf-8")
     raw = yaml.safe_load(yaml_content)
     logger.info("Config downloaded and parsed from GCS: %s", gcs_uri)
-    return raw
+    return raw, yaml_content

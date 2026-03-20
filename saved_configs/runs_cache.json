@@ -1,0 +1,540 @@
+{
+  "0ea11769-bbf9-4e10-8db2-b47e652230fe": {
+    "run_id": "0ea11769-bbf9-4e10-8db2-b47e652230fe",
+    "status": "completed",
+    "config": {
+      "project": "data-test-automation-489413",
+      "dataset": "raw_file_loads",
+      "table": "generic_file_load_test",
+      "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv",
+      "primary_keys": [
+        "id"
+      ],
+      "partition": {
+        "enabled": false,
+        "column": "",
+        "type": "DATE"
+      },
+      "random_sample_size": 100,
+      "validation_layers": {
+        "metadata_validation": true,
+        "row_count_validation": true,
+        "primary_key_uniqueness": true,
+        "aggregate_validation": true,
+        "partition_validation": false,
+        "hash_validation": false,
+        "random_sampling": false,
+        "column_distribution": false,
+        "null_validation": false,
+        "column_checksum": false
+      },
+      "aggregate_columns": [
+        {
+          "column": "quantity",
+          "functions": [
+            "sum",
+            "avg"
+          ]
+        },
+        {
+          "column": "email",
+          "functions": [
+            "distinct_count"
+          ]
+        }
+      ],
+      "distribution_columns": [],
+      "null_check_columns": [],
+      "column_checksum_columns": [],
+      "file_format": {
+        "file_type": "csv",
+        "skip_rows": 1
+      }
+    },
+    "summary": {
+      "total": 8,
+      "passed": 1,
+      "failed": 2,
+      "skipped": 0,
+      "errors": 5,
+      "execution_time_ms": 3335
+    },
+    "results": [
+      {
+        "test_name": "schema_validation",
+        "status": "FAIL",
+        "expected": "['active', 'amount', 'category', 'comment', 'country', 'email', 'event_date', 'event_timestamp', 'id', 'name', 'quantity', 'record_uuid', 'score']",
+        "actual": "['0.95', '1', '100.50', '2', '2025-01-01', '2025-01-01 10:00:00', 'A', 'Alice', 'US', 'alice@test.com', 'ok', 'true', 'uuid-001']",
+        "execution_time_ms": 0,
+        "details": {
+          "common_columns_count": 0,
+          "missing_from_file": [
+            "active",
+            "amount",
+            "category",
+            "comment",
+            "country",
+            "email",
+            "event_date",
+            "event_timestamp",
+            "id",
+            "name",
+            "quantity",
+            "record_uuid",
+            "score"
+          ],
+          "extra_in_file": [
+            "0.95",
+            "1",
+            "100.50",
+            "2",
+            "2025-01-01",
+            "2025-01-01 10:00:00",
+            "A",
+            "Alice",
+            "US",
+            "alice@test.com",
+            "ok",
+            "true",
+            "uuid-001"
+          ],
+          "bq_column_types": []
+        },
+        "message": null
+      },
+      {
+        "test_name": "row_count_validation",
+        "status": "FAIL",
+        "expected": "2",
+        "actual": "5",
+        "execution_time_ms": 1727,
+        "details": {
+          "file_row_count": 2,
+          "bq_row_count": 5,
+          "delta": 3,
+          "delta_pct": 150.0
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_file",
+        "status": "ERROR",
+        "expected": null,
+        "actual": null,
+        "execution_time_ms": 0,
+        "details": {
+          "error": "\"Primary key column(s) not found in file: ['id']\""
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_null_check_file",
+        "status": "ERROR",
+        "expected": null,
+        "actual": null,
+        "execution_time_ms": 0,
+        "details": {
+          "error": "\"Primary key column(s) not found in file: ['id']\""
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_bq",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 1606,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "duplicate_pk_groups_in_bq": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_quantity_sum",
+        "status": "ERROR",
+        "expected": null,
+        "actual": null,
+        "execution_time_ms": 0,
+        "details": {
+          "error": "\"Column 'quantity' not found in file.\""
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_quantity_avg",
+        "status": "ERROR",
+        "expected": null,
+        "actual": null,
+        "execution_time_ms": 0,
+        "details": {
+          "error": "\"Column 'quantity' not found in file.\""
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_email_distinct_count",
+        "status": "ERROR",
+        "expected": null,
+        "actual": null,
+        "execution_time_ms": 0,
+        "details": {
+          "error": "\"Column 'email' not found in file.\""
+        },
+        "message": null
+      }
+    ],
+    "created_at": "2026-03-19T11:54:39.717456+00:00",
+    "completed_at": "2026-03-19T11:54:48.452856+00:00"
+  },
+  "75bbd24f-8549-4434-81bc-93ba8651be6c": {
+    "run_id": "75bbd24f-8549-4434-81bc-93ba8651be6c",
+    "status": "completed",
+    "config": {
+      "aggregate_columns": [
+        {
+          "column": "quantity",
+          "functions": [
+            "sum",
+            "avg"
+          ]
+        },
+        {
+          "column": "email",
+          "functions": [
+            "distinct_count"
+          ]
+        }
+      ],
+      "column_checksum_columns": [],
+      "dataset": "raw_file_loads",
+      "distribution_columns": [],
+      "file_format": {
+        "file_type": "csv",
+        "skip_rows": 0
+      },
+      "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv",
+      "null_check_columns": [],
+      "partition": {
+        "column": "",
+        "enabled": false,
+        "type": "DATE"
+      },
+      "primary_keys": [
+        "id"
+      ],
+      "project": "data-test-automation-489413",
+      "random_sample_size": 100,
+      "table": "generic_file_load_test",
+      "validation_layers": {
+        "aggregate_validation": true,
+        "column_checksum": false,
+        "column_distribution": false,
+        "hash_validation": false,
+        "metadata_validation": true,
+        "null_validation": false,
+        "partition_validation": false,
+        "primary_key_uniqueness": true,
+        "random_sampling": false,
+        "row_count_validation": true
+      }
+    },
+    "summary": {
+      "total": 8,
+      "passed": 4,
+      "failed": 4,
+      "skipped": 0,
+      "errors": 0,
+      "execution_time_ms": 3492
+    },
+    "results": [
+      {
+        "test_name": "schema_validation",
+        "status": "PASS",
+        "expected": "['active', 'amount', 'category', 'comment', 'country', 'email', 'event_date', 'event_timestamp', 'id', 'name', 'quantity', 'record_uuid', 'score']",
+        "actual": "['active', 'amount', 'category', 'comment', 'country', 'email', 'event_date', 'event_timestamp', 'id', 'name', 'quantity', 'record_uuid', 'score']",
+        "execution_time_ms": 0,
+        "details": {
+          "common_columns_count": 13,
+          "missing_from_file": [],
+          "extra_in_file": [],
+          "bq_column_types": [
+            "active: BQ=BOOLEAN",
+            "amount: BQ=NUMERIC",
+            "category: BQ=STRING",
+            "comment: BQ=STRING",
+            "country: BQ=STRING",
+            "email: BQ=STRING",
+            "event_date: BQ=DATE",
+            "event_timestamp: BQ=TIMESTAMP",
+            "id: BQ=INTEGER",
+            "name: BQ=STRING",
+            "quantity: BQ=INTEGER",
+            "record_uuid: BQ=STRING",
+            "score: BQ=FLOAT"
+          ]
+        },
+        "message": null
+      },
+      {
+        "test_name": "row_count_validation",
+        "status": "FAIL",
+        "expected": "3",
+        "actual": "5",
+        "execution_time_ms": 1898,
+        "details": {
+          "file_row_count": 3,
+          "bq_row_count": 5,
+          "delta": 2,
+          "delta_pct": 66.6667
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_file",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 1,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "duplicate_rows": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_null_check_file",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 4,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "null_pk_rows": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_bq",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 1584,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "duplicate_pk_groups_in_bq": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_quantity_sum",
+        "status": "FAIL",
+        "expected": "6.0",
+        "actual": "12.0",
+        "execution_time_ms": 1,
+        "details": {
+          "column": "quantity",
+          "function": "sum",
+          "file_value": 6.0,
+          "bq_value": 12.0,
+          "delta": 6.0
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_quantity_avg",
+        "status": "FAIL",
+        "expected": "2.0",
+        "actual": "2.4",
+        "execution_time_ms": 0,
+        "details": {
+          "column": "quantity",
+          "function": "avg",
+          "file_value": 2.0,
+          "bq_value": 2.4,
+          "delta": 0.4
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_email_distinct_count",
+        "status": "FAIL",
+        "expected": "3",
+        "actual": "5",
+        "execution_time_ms": 1,
+        "details": {
+          "column": "email",
+          "function": "distinct_count",
+          "file_value": 3,
+          "bq_value": 5
+        },
+        "message": null
+      }
+    ],
+    "created_at": "2026-03-19T12:13:48.304264+00:00",
+    "completed_at": "2026-03-19T12:13:56.984841+00:00"
+  },
+  "ed36a28c-d34a-472d-9d8e-d96b23b932fb": {
+    "run_id": "ed36a28c-d34a-472d-9d8e-d96b23b932fb",
+    "status": "completed",
+    "config": {
+      "aggregate_columns": [
+        {
+          "column": "email",
+          "functions": [
+            "distinct_count"
+          ]
+        }
+      ],
+      "column_checksum_columns": [],
+      "dataset": "raw_file_loads",
+      "distribution_columns": [],
+      "file_format": {
+        "file_type": "csv"
+      },
+      "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv",
+      "null_check_columns": [],
+      "partition": {
+        "column": "",
+        "enabled": false,
+        "type": "DATE"
+      },
+      "primary_keys": [
+        "id"
+      ],
+      "project": "data-test-automation-489413",
+      "random_sample_size": 100,
+      "table": "generic_file_load_test",
+      "validation_layers": {
+        "aggregate_validation": true,
+        "column_checksum": false,
+        "column_distribution": false,
+        "hash_validation": false,
+        "metadata_validation": true,
+        "null_validation": false,
+        "partition_validation": false,
+        "primary_key_uniqueness": true,
+        "random_sampling": false,
+        "row_count_validation": true
+      }
+    },
+    "summary": {
+      "total": 6,
+      "passed": 4,
+      "failed": 2,
+      "skipped": 0,
+      "errors": 0,
+      "execution_time_ms": 3234
+    },
+    "results": [
+      {
+        "test_name": "schema_validation",
+        "status": "PASS",
+        "expected": "['active', 'amount', 'category', 'comment', 'country', 'email', 'event_date', 'event_timestamp', 'id', 'name', 'quantity', 'record_uuid', 'score']",
+        "actual": "['active', 'amount', 'category', 'comment', 'country', 'email', 'event_date', 'event_timestamp', 'id', 'name', 'quantity', 'record_uuid', 'score']",
+        "execution_time_ms": 2,
+        "details": {
+          "common_columns_count": 13,
+          "missing_from_file": [],
+          "extra_in_file": [],
+          "bq_column_types": [
+            "active: BQ=BOOLEAN",
+            "amount: BQ=NUMERIC",
+            "category: BQ=STRING",
+            "comment: BQ=STRING",
+            "country: BQ=STRING",
+            "email: BQ=STRING",
+            "event_date: BQ=DATE",
+            "event_timestamp: BQ=TIMESTAMP",
+            "id: BQ=INTEGER",
+            "name: BQ=STRING",
+            "quantity: BQ=INTEGER",
+            "record_uuid: BQ=STRING",
+            "score: BQ=FLOAT"
+          ]
+        },
+        "message": null
+      },
+      {
+        "test_name": "row_count_validation",
+        "status": "FAIL",
+        "expected": "3",
+        "actual": "5",
+        "execution_time_ms": 1585,
+        "details": {
+          "file_row_count": 3,
+          "bq_row_count": 5,
+          "delta": 2,
+          "delta_pct": 66.6667
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_file",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 2,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "duplicate_rows": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_null_check_file",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 4,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "null_pk_rows": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "primary_key_uniqueness_bq",
+        "status": "PASS",
+        "expected": "0",
+        "actual": "0",
+        "execution_time_ms": 1638,
+        "details": {
+          "primary_keys": [
+            "id"
+          ],
+          "duplicate_pk_groups_in_bq": 0
+        },
+        "message": null
+      },
+      {
+        "test_name": "aggregate_validation_email_distinct_count",
+        "status": "FAIL",
+        "expected": "3",
+        "actual": "5",
+        "execution_time_ms": 1,
+        "details": {
+          "column": "email",
+          "function": "distinct_count",
+          "file_value": 3,
+          "bq_value": 5
+        },
+        "message": null
+      }
+    ],
+    "created_at": "2026-03-19T14:16:43.526595+00:00",
+    "completed_at": "2026-03-19T14:16:50.780475+00:00"
+  }
+}

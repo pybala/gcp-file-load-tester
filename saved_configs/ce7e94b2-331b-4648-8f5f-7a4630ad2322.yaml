@@ -1,0 +1,31 @@
+project: data-test-automation-489413
+dataset: raw_file_loads
+table: generic_file_load_test
+file_path: /Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv
+primary_keys:
+- id
+partition:
+  enabled: false
+  column: ''
+  type: DATE
+random_sample_size: 100
+validation_layers:
+  metadata_validation: true
+  row_count_validation: true
+  primary_key_uniqueness: true
+  aggregate_validation: true
+  partition_validation: false
+  hash_validation: false
+  random_sampling: false
+  column_distribution: false
+  null_validation: false
+  column_checksum: false
+aggregate_columns:
+- column: email
+  functions:
+  - distinct_count
+distribution_columns: []
+null_check_columns: []
+column_checksum_columns: []
+file_format:
+  file_type: csv

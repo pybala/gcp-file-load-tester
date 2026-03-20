@@ -13,9 +13,26 @@ dataset: raw_file_loads               # BigQuery dataset name
 table: generic_file_load_test                   # BigQuery table name
 
 # ----------------------------
-# Source CSV file
+# Source file
 # ----------------------------
-file_path: /Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv      # Absolute or relative path to the CSV file
+file_path: /Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv
+
+# ----------------------------
+# File format options
+# ----------------------------
+file_format:
+  file_type: csv        # csv | json | jsonl
+  delimiter: ","
+  enclosed_by: '"'
+  escape_char: ~
+  has_header: true
+  skip_rows: 0
+  encoding: utf-8
+  null_values:
+    - ""
+    - "NULL"
+    - "N/A"
+    - "\\N"
 
 # ----------------------------
 # Primary key definition

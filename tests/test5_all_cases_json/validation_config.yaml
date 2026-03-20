@@ -1,0 +1,292 @@
+# ==============================================================================
+# Test 5 — All Validation Layers (JSONL · STRUCT column)
+# Table  : data-test-automation-489413.raw_file_loads.validation_full_test
+# File   : tests/test5_all_cases_json/bq_json_test.jsonl
+# Rows   : 5
+# Columns: 11  (INT64, STRING, FLOAT64, BOOL, DATE, TIMESTAMP, STRUCT)
+# Purpose: Exercise all 17 validation layers in a single run.
+# ==============================================================================
+
+project: data-test-automation-489413
+dataset: raw_file_loads
+table: validation_full_test
+file_path: tests/test5_all_cases_json/bq_json_test.jsonl
+
+
+# ------------------------------------------------------------------------------
+# File Format
+# ------------------------------------------------------------------------------
+file_format:
+  file_type: jsonl
+  encoding: utf-8
+
+
+# ------------------------------------------------------------------------------
+# Primary Keys
+# ------------------------------------------------------------------------------
+primary_keys:
+  - id
+
+
+# ------------------------------------------------------------------------------
+# Partition  (table is not partitioned)
+# ------------------------------------------------------------------------------
+partition:
+  enabled: false
+
+
+# ------------------------------------------------------------------------------
+# Random Sampling
+# ------------------------------------------------------------------------------
+random_sample_size: 5
+
+
+# ==============================================================================
+# Validation Layers — all 17 enabled
+# ==============================================================================
+validation_layers:
+
+  # Layer 1  — Schema / Metadata Validation
+  metadata_validation: true
+
+  # Layer 2  — Row Count Validation
+  row_count_validation: true
+
+  # Layer 3  — Primary Key Uniqueness (file + BQ)
+  primary_key_uniqueness: true
+
+  # Layer 4  — Aggregate Validation
+  aggregate_validation: true
+
+  # Layer 5  — Partition Validation (disabled — table is not partitioned)
+  partition_validation: false
+
+  # Layer 6  — Hash Validation
+  hash_validation: true
+
+  # Layer 7  — Random Sampling Validation
+  random_sampling: true
+
+  # Layer 8  — Column Distribution Validation
+  column_distribution: true
+
+  # Layer 9  — Null Value Validation
+  null_validation: true
+
+  # Layer 10 — Column-Level Checksum Validation
+  column_checksum: true
+
+  # Layer 11 — Data Type Validation
+  datatype_validation: true
+
+  # Layer 12 — Enum Validation
+  enum_validation: true
+
+  # Layer 13 — Range Validation
+  range_validation: true
+
+  # Layer 14 — Regex Validation
+  regex_validation: true
+
+  # Layer 15 — Duplicate Row Validation
+  duplicate_row_validation: true
+
+  # Layer 16 — JSON Schema Validation
+  json_schema_validation: true
+
+  # Layer 17 — Non-Negative Validation
+  non_negative_validation: true
+
+
+# ==============================================================================
+# Layer 4 — Aggregate Columns
+# Supported functions: sum, min, max, avg, distinct_count
+# NOTE: "count" is NOT supported — use "distinct_count" or Layer 2 for total rows.
+# ==============================================================================
+aggregate_columns:
+
+  # INT64 primary key — range bounds + distinct count
+  - column: id
+    functions:
+      - min
+      - max
+      - distinct_count
+
+  # FLOAT64 — full numeric aggregates
+  - column: amount
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  # INT64 — quantity totals
+  - column: quantity
+    functions:
+      - sum
+      - min
+      - max
+      - avg
+
+  # FLOAT64 — score distribution
+  - column: score
+    functions:
+      - min
+      - max
+      - avg
+
+  # STRING — uniqueness check via distinct_count
+  - column: email
+    functions:
+      - distinct_count
+
+  # STRING — categorical cardinality
+  - column: country_code
+    functions:
+      - distinct_count
+
+  # DATE — date range check
+  - column: event_date
+    functions:
+      - min
+      - max
+
+  # TIMESTAMP — timestamp range check
+  - column: created_at
+    functions:
+      - min
+      - max
+
+
+# ==============================================================================
+# Layer 8 — Distribution Columns (NUMERIC only)
+# ==============================================================================
+distribution_columns:
+  - amount
+  - quantity
+  - score
+
+
+# ==============================================================================
+# Layer 9 — Null Check Columns
+# Leave empty to check ALL columns from the source file automatically.
+# ==============================================================================
+null_check_columns: []
+
+
+# ==============================================================================
+# Layer 10 — Column Checksum Columns
+# All 11 columns included — is_active has 3 true + 2 false (odd true count)
+# so no XOR collision risk.
+# ==============================================================================
+column_checksum_columns:
+  - id
+  - transaction_id
+  - email
+  - amount
+  - quantity
+  - score
+  - is_active
+  - country_code
+  - event_date
+  - created_at
+  - customer_info
+
+
+# ==============================================================================
+# Layer 11 — Data Type Validation
+# Verifies each non-null cell is parseable as the declared type.
+# ==============================================================================
+datatype_columns:
+  - column: id
+    expected_type: integer
+
+  - column: amount
+    expected_type: float
+
+  - column: quantity
+    expected_type: integer
+
+  - column: score
+    expected_type: float
+
+  - column: is_active
+    expected_type: boolean
+
+  - column: event_date
+    expected_type: date
+
+  - column: created_at
+    expected_type: timestamp
+
+
+# ==============================================================================
+# Layer 12 — Enum Validation
+# country_code must be one of the three values present in the test dataset.
+# ==============================================================================
+enum_columns:
+  - column: country_code
+    allowed_values:
+      - US
+      - GB
+      - IN
+
+
+# ==============================================================================
+# Layer 13 — Range Validation
+# Inclusive bounds derived from the test dataset.
+# ==============================================================================
+range_columns:
+  - column: amount
+    min: 0
+    max: 10000
+
+  - column: quantity
+    min: 1
+    max: 100
+
+  - column: score
+    min: 0
+    max: 100
+
+
+# ==============================================================================
+# Layer 14 — Regex Validation
+# Patterns derived from the actual values in the test dataset.
+# ==============================================================================
+regex_columns:
+  # Standard email format
+  - column: email
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+
+  # 2-letter uppercase country code
+  - column: country_code
+    pattern: "^[A-Z]{2}$"
+
+  # Transaction ID format used in test data:
+  # 8 alphanumeric chars - 4 digits - "4" + 3 lowercase alpha
+  # Example: "a1b2c3d4-1234-4abc"
+  - column: transaction_id
+    pattern: "^[a-z0-9]{8}-\\d{4}-4[a-z]{3}$"
+
+
+# ==============================================================================
+# Layer 16 — JSON Schema Validation
+# customer_info STRUCT must contain both "name" and "age" keys in every row.
+# Works with pre-parsed dicts (JSONL) — no json.loads() needed for JSONL files.
+# ==============================================================================
+json_schema_columns:
+  - column: customer_info
+    required_keys:
+      - name
+      - age
+
+
+# ==============================================================================
+# Layer 17 — Non-Negative Validation
+# Numeric columns that must never contain negative values.
+# ==============================================================================
+non_negative_columns:
+  - amount
+  - quantity
+  - score

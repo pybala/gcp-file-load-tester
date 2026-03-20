@@ -24,9 +24,12 @@ import logging
 import os
 import tempfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 import pandas as pd
+
+if TYPE_CHECKING:
+    from core.config_loader import FileFormatConfig
 
 logger = logging.getLogger(__name__)
 
@@ -125,18 +128,28 @@ class FileReader:
         scalar columns; nested columns are detected and skipped gracefully.
     """
 
-    def __init__(self, file_path: str):
+    def __init__(
+        self,
+        file_path: str,
+        file_format: "Optional[FileFormatConfig]" = None,
+    ):
         """
         Initialise the reader and load the file into memory.
 
         Args:
-            file_path: Local path or GCS URI (gs://...) to the source file.
+            file_path:   Local path or GCS URI (gs://...) to the source file.
+            file_format: Optional FileFormatConfig with parsing options
+                         (delimiter, enclosed_by, escape_char, encoding,
+                          has_header, skip_rows, null_values, file_type).
+                         When None, all settings fall back to defaults and
+                         the format is auto-detected from the file extension.
 
         Raises:
             FileNotFoundError: If a local file does not exist.
             ValueError: If the file cannot be parsed.
         """
         self._original_path = file_path
+        self._file_format = file_format
         self._tmp_dir: Optional[tempfile.TemporaryDirectory] = None
 
         # Resolve to a local path (downloading from GCS if necessary)
@@ -144,29 +157,7 @@ class FileReader:
 
         logger.info("Loading file: %s", local_path)
         try:
-            ext = Path(local_path).suffix.lower()
-            if ext in (".jsonl", ".ndjson"):
-                # Newline-delimited JSON — each line is one JSON object
-                self._df: pd.DataFrame = pd.read_json(
-                    local_path,
-                    lines=True,
-                )
-                logger.info("Detected format: JSONL (newline-delimited JSON)")
-            elif ext == ".json":
-                if _is_jsonlines(local_path):
-                    self._df = pd.read_json(local_path, lines=True)
-                    logger.info("Detected format: JSONL (newline-delimited JSON, .json ext)")
-                else:
-                    self._df = pd.read_json(local_path)
-                    logger.info("Detected format: JSON array")
-            else:
-                # Default: CSV
-                self._df = pd.read_csv(
-                    local_path,
-                    low_memory=False,     # Avoid mixed-type inference warnings
-                    keep_default_na=True,
-                )
-                logger.info("Detected format: CSV")
+            self._df: pd.DataFrame = self._load_file(local_path)
         except Exception as exc:
             raise ValueError(
                 f"Failed to parse file '{local_path}': {exc}"
@@ -175,6 +166,81 @@ class FileReader:
         logger.info(
             "File loaded — rows=%d, columns=%d", len(self._df), len(self._df.columns)
         )
+
+    # ------------------------------------------------------------------
+    # Private: file loading (format-aware)
+    # ------------------------------------------------------------------
+
+    def _load_file(self, local_path: str) -> pd.DataFrame:
+        """
+        Load *local_path* into a DataFrame, honouring file_format settings.
+
+        Format resolution order:
+          1. ``file_format.file_type`` (explicit override)
+          2. File extension  (.csv / .jsonl / .ndjson / .json)
+          3. Content heuristic for bare ``.json`` files
+        """
+        fmt = self._file_format
+        ext = Path(local_path).suffix.lower()
+
+        # ── Determine effective file type ────────────────────────────────────
+        if fmt and fmt.file_type:
+            effective_type = fmt.file_type
+            logger.info("File type: %s (from config file_format.file_type)", effective_type)
+        elif ext in (".jsonl", ".ndjson"):
+            effective_type = "jsonl"
+        elif ext == ".json":
+            effective_type = "jsonl" if _is_jsonlines(local_path) else "json"
+        else:
+            effective_type = "csv"
+
+        # ── Load by type ─────────────────────────────────────────────────────
+        encoding = (fmt.encoding if fmt else None) or "utf-8"
+
+        if effective_type == "jsonl":
+            df = pd.read_json(local_path, lines=True, encoding=encoding)
+            logger.info("Loaded format: JSONL (newline-delimited JSON)")
+
+        elif effective_type == "json":
+            df = pd.read_json(local_path, encoding=encoding)
+            logger.info("Loaded format: JSON array")
+
+        else:
+            # CSV — apply all format options
+            delimiter   = (fmt.delimiter   if fmt else None) or ","
+            quotechar   = (fmt.enclosed_by if fmt else None) or '"'
+            escapechar  = (fmt.escape_char  if fmt else None) or None
+            has_header  = fmt.has_header  if fmt else True
+            skip_rows   = fmt.skip_rows   if fmt else 0
+            null_values = fmt.null_values if fmt else []
+
+            header_arg = 0 if has_header else None
+
+            # Build the na_values list: start with user-provided values,
+            # then let pandas add its own built-in set via keep_default_na=True.
+            na_values = null_values if null_values else None
+
+            read_csv_kwargs: Dict[str, Any] = dict(
+                sep=delimiter,
+                quotechar=quotechar,
+                escapechar=escapechar,
+                encoding=encoding,
+                header=header_arg,
+                skiprows=skip_rows,
+                low_memory=False,
+                keep_default_na=True,
+            )
+            if na_values:
+                read_csv_kwargs["na_values"] = na_values
+
+            df = pd.read_csv(local_path, **read_csv_kwargs)
+            logger.info(
+                "Loaded format: CSV  [delimiter=%r  quotechar=%r  "
+                "escapechar=%r  has_header=%s  skip_rows=%d  encoding=%s]",
+                delimiter, quotechar, escapechar, has_header, skip_rows, encoding,
+            )
+
+        return df
 
     # ------------------------------------------------------------------
     # Private: path resolution

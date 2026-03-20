@@ -1,11 +1,11 @@
 {
-  "run_id": "30877fb4-56d3-4ebd-8459-e798551efe31",
+  "run_id": "76fe0269-1239-4c37-bf7d-647c02b68675",
   "dataset": "raw_file_loads",
   "table": "generic_file_load_test",
   "file_path": "/Users/balakumar/Work/apps/myapps/my-git-docker/repo/gcp-file-load-tester/tests/test4_simple_csv/bq_test_csv_file.csv",
-  "timestamp": "2026-03-13T15:51:07.141864+00:00",
+  "timestamp": "2026-03-14T17:28:27.727629+00:00",
   "overall_status": "FAIL",
-  "total_execution_time_ms": 12171.321,
+  "total_execution_time_ms": 11257.212,
   "summary": {
     "total": 37,
     "passed": 31,
@@ -68,7 +68,7 @@
           "score: BQ=FLOAT"
         ]
       },
-      "execution_time_ms": 0.366
+      "execution_time_ms": 0.479
     },
     {
       "test_name": "row_count_validation",
@@ -81,7 +81,7 @@
         "delta": 2,
         "delta_pct": 66.6667
       },
-      "execution_time_ms": 1678.499
+      "execution_time_ms": 1919.257
     },
     {
       "test_name": "primary_key_uniqueness_file",
@@ -94,7 +94,7 @@
         ],
         "duplicate_rows": 0
       },
-      "execution_time_ms": 1.633
+      "execution_time_ms": 5.017
     },
     {
       "test_name": "primary_key_null_check_file",
@@ -107,7 +107,7 @@
         ],
         "null_pk_rows": 0
       },
-      "execution_time_ms": 2.35
+      "execution_time_ms": 4.001
     },
     {
       "test_name": "primary_key_uniqueness_bq",
@@ -120,7 +120,7 @@
         ],
         "duplicate_pk_groups_in_bq": 0
       },
-      "execution_time_ms": 2442.841
+      "execution_time_ms": 1483.005
     },
     {
       "test_name": "aggregate_validation_quantity_sum",
@@ -134,7 +134,7 @@
         "bq_value": 12.0,
         "delta": 6.0
       },
-      "execution_time_ms": 1.279
+      "execution_time_ms": 1.24
     },
     {
       "test_name": "aggregate_validation_quantity_avg",
@@ -148,7 +148,7 @@
         "bq_value": 2.4,
         "delta": 0.4
       },
-      "execution_time_ms": 0.728
+      "execution_time_ms": 0.84
     },
     {
       "test_name": "aggregate_validation_email_distinct_count",
@@ -161,22 +161,22 @@
         "file_value": 3,
         "bq_value": 5
       },
-      "execution_time_ms": 1.089
+      "execution_time_ms": 1.245
     },
     {
       "test_name": "hash_validation",
       "status": "PASS",
-      "expected": "10716835376886689317",
+      "expected": "15728225559230053418",
       "actual": "-1770177170011187938",
       "details": {
         "file_hash_algorithm": "Python XOR(hash(row_string))",
         "bq_hash_algorithm": "BIT_XOR(FARM_FINGERPRINT(TO_JSON_STRING(row)))",
-        "file_hash": "10716835376886689317",
+        "file_hash": "15728225559230053418",
         "bq_hash": "-1770177170011187938",
         "file_row_count": 3,
         "note": "Both file and BQ produced non-zero hash aggregates. Hash values differ due to algorithm difference (Python hash vs FARM_FINGERPRINT) — this is expected. For bit-exact comparison, both sides must use the same algorithm."
       },
-      "execution_time_ms": 1549.08
+      "execution_time_ms": 1528.271
     },
     {
       "test_name": "random_sampling_validation",
@@ -193,7 +193,7 @@
         "missing_in_bq_pks": [],
         "failing_rows": []
       },
-      "execution_time_ms": 1646.249
+      "execution_time_ms": 1592.031
     },
     {
       "test_name": "column_distribution_quantity",
@@ -244,7 +244,7 @@
         "file_total_count": 3,
         "bq_total_count": 5
       },
-      "execution_time_ms": 1591.877
+      "execution_time_ms": 1617.946
     },
     {
       "test_name": "null_validation:id",
@@ -256,7 +256,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:record_uuid",
@@ -268,7 +268,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:name",
@@ -280,7 +280,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:email",
@@ -292,7 +292,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:country",
@@ -304,7 +304,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:amount",
@@ -316,7 +316,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:score",
@@ -328,7 +328,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:active",
@@ -340,7 +340,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:category",
@@ -352,7 +352,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:event_date",
@@ -364,7 +364,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:event_timestamp",
@@ -376,7 +376,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:quantity",
@@ -388,7 +388,7 @@
         "bq_null_count": 0,
         "diff": 0
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "null_validation:comment",
@@ -400,189 +400,189 @@
         "bq_null_count": 2,
         "diff": 1
       },
-      "execution_time_ms": 124.41
+      "execution_time_ms": 121.41
     },
     {
       "test_name": "column_checksum:id",
       "status": "PASS",
-      "expected": 6097730010024097683,
+      "expected": 2070673679727606675,
       "actual": -8597563143918776357,
       "details": {
-        "file_column_hash": 6097730010024097683,
+        "file_column_hash": 2070673679727606675,
         "bq_column_hash": -8597563143918776357,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:record_uuid",
       "status": "PASS",
-      "expected": -4212646600629968760,
+      "expected": -1689753733852742819,
       "actual": 6714242014223819588,
       "details": {
-        "file_column_hash": -4212646600629968760,
+        "file_column_hash": -1689753733852742819,
         "bq_column_hash": 6714242014223819588,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:name",
       "status": "PASS",
-      "expected": 3006313669422952965,
+      "expected": -5140168389169585681,
       "actual": -4514788917768896082,
       "details": {
-        "file_column_hash": 3006313669422952965,
+        "file_column_hash": -5140168389169585681,
         "bq_column_hash": -4514788917768896082,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:email",
       "status": "PASS",
-      "expected": 2999077977146398991,
+      "expected": -7402949439779837548,
       "actual": 2805926445295673682,
       "details": {
-        "file_column_hash": 2999077977146398991,
+        "file_column_hash": -7402949439779837548,
         "bq_column_hash": 2805926445295673682,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:country",
       "status": "PASS",
-      "expected": 1238241839054394669,
+      "expected": -3504736146647880874,
       "actual": 1881679696595029334,
       "details": {
-        "file_column_hash": 1238241839054394669,
+        "file_column_hash": -3504736146647880874,
         "bq_column_hash": 1881679696595029334,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:amount",
       "status": "PASS",
-      "expected": -9087030076584952050,
+      "expected": -3618153118194384009,
       "actual": 1881876617143792411,
       "details": {
-        "file_column_hash": -9087030076584952050,
+        "file_column_hash": -3618153118194384009,
         "bq_column_hash": 1881876617143792411,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:score",
       "status": "PASS",
-      "expected": -8394268917632245386,
+      "expected": 6723380640837694114,
       "actual": 5942949011622181641,
       "details": {
-        "file_column_hash": -8394268917632245386,
+        "file_column_hash": 6723380640837694114,
         "bq_column_hash": 5942949011622181641,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:active",
       "status": "PASS",
-      "expected": 36303912416644220,
+      "expected": -2488851994149952049,
       "actual": 8572766038233537570,
       "details": {
-        "file_column_hash": 36303912416644220,
+        "file_column_hash": -2488851994149952049,
         "bq_column_hash": 8572766038233537570,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:category",
       "status": "PASS",
-      "expected": -8655777739744584139,
+      "expected": 7682490449727827624,
       "actual": 6440351476135820929,
       "details": {
-        "file_column_hash": -8655777739744584139,
+        "file_column_hash": 7682490449727827624,
         "bq_column_hash": 6440351476135820929,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:event_date",
       "status": "PASS",
-      "expected": -4783532723797917395,
+      "expected": 7296380791658697730,
       "actual": 8763931003742357114,
       "details": {
-        "file_column_hash": -4783532723797917395,
+        "file_column_hash": 7296380791658697730,
         "bq_column_hash": 8763931003742357114,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:event_timestamp",
       "status": "PASS",
-      "expected": -1500107104166355696,
+      "expected": 8721188305604718084,
       "actual": -3331960963314050324,
       "details": {
-        "file_column_hash": -1500107104166355696,
+        "file_column_hash": 8721188305604718084,
         "bq_column_hash": -3331960963314050324,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:quantity",
       "status": "PASS",
-      "expected": 6097730010024097683,
+      "expected": 2070673679727606675,
       "actual": -1230462465015596393,
       "details": {
-        "file_column_hash": 6097730010024097683,
+        "file_column_hash": 2070673679727606675,
         "bq_column_hash": -1230462465015596393,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     },
     {
       "test_name": "column_checksum:comment",
       "status": "PASS",
-      "expected": -4414578215786238707,
+      "expected": -4224475800261556047,
       "actual": -3911979419501288335,
       "details": {
-        "file_column_hash": -4414578215786238707,
+        "file_column_hash": -4224475800261556047,
         "bq_column_hash": -3911979419501288335,
         "file_has_data": true,
         "bq_has_data": true,
         "note": "Hash algorithms differ (Python XOR vs BQ FARM_FINGERPRINT). PASS confirms both sides are non-zero (data present). Use hash_validation for full row-level integrity."
       },
-      "execution_time_ms": 126.0
+      "execution_time_ms": 117.35
     }
   ]
 }

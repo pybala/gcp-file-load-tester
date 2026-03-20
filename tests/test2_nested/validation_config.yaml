@@ -22,6 +22,13 @@ table:   "orders_with_nested"
 file_path: "tests/test2_nested/bq_json_test_file.jsonl"
 
 # ---------------------------------------------------------------------------
+# File format options
+# ---------------------------------------------------------------------------
+file_format:
+  file_type: jsonl      # csv | json | jsonl  (auto-detected from extension if omitted)
+  encoding: utf-8       # file encoding
+
+# ---------------------------------------------------------------------------
 # Primary key
 # ---------------------------------------------------------------------------
 primary_keys:

@@ -3,6 +3,8 @@
 # =============================================================================
 # Targets:
 #   make setup        — Create venv and install dependencies
+#   make api          — Start the Flask REST API server (for the UI)
+#   make api-no-bq    — Start API server without BigQuery writes
 #   make run          — Run validator locally (CLI mode)
 #   make serve        — Start local Cloud Function dev server
 #   make invoke       — Send a test HTTP request to the local dev server
@@ -39,10 +41,14 @@ CONFIG          ?= config/validation_config.yaml
 OUTPUT          ?=
 LOG_LEVEL       ?= INFO
 
+# API server settings
+API_PORT        ?= 8000
+API_HOST        ?= 0.0.0.0
+
 # ---------------------------------------------------------------------------
 # Phony targets
 # ---------------------------------------------------------------------------
-.PHONY: setup run serve invoke deploy lint clean help
+.PHONY: setup api api-no-bq run serve invoke deploy lint clean help
 
 # ---------------------------------------------------------------------------
 # Default target
@@ -56,6 +62,26 @@ setup: ## Create venv and install dependencies
 	@echo "▶  Setting up virtual environment..."
 	bash setup_venv.sh
 	@echo "✓  Setup complete. Activate with: source $(VENV)/bin/activate"
+
+# ---------------------------------------------------------------------------
+# api — Start the Flask REST API server (used by the React UI)
+# ---------------------------------------------------------------------------
+api: $(VENV)/bin/activate ## Start the Flask REST API server (for the data-validator-ui)
+	@echo "▶  Starting Data Validator API server..."
+	@echo "   URL  : http://$(API_HOST):$(API_PORT)"
+	@echo "   Stop : Ctrl+C"
+	@echo ""
+	$(PYTHON) api_server.py --host $(API_HOST) --port $(API_PORT)
+
+# ---------------------------------------------------------------------------
+# api-no-bq — Start API server without BigQuery metadata writes
+# ---------------------------------------------------------------------------
+api-no-bq: $(VENV)/bin/activate ## Start the Flask API server with --no-metadata (no GCP credentials needed)
+	@echo "▶  Starting Data Validator API server (no BigQuery writes)..."
+	@echo "   URL  : http://$(API_HOST):$(API_PORT)"
+	@echo "   Stop : Ctrl+C"
+	@echo ""
+	$(PYTHON) api_server.py --host $(API_HOST) --port $(API_PORT) --no-metadata
 
 # ---------------------------------------------------------------------------
 # run — Run the validator locally via CLI
@@ -162,6 +188,9 @@ help: ## Show this help message
 	@echo ""
 	@echo "Examples:"
 	@echo "  make setup"
+	@echo "  make api                          # start API server (requires GCP credentials)"
+	@echo "  make api-no-bq                    # start API server without BigQuery writes"
+	@echo "  make api API_PORT=9000            # use a different port"
 	@echo "  make run CONFIG=config/validation_config.yaml"
 	@echo "  make run CONFIG=config/validation_config.yaml OUTPUT=results.json"
 	@echo "  make serve"

@@ -1,6 +1,6 @@
 # Validation Layers Reference
 
-This document describes each of the 10 validation layers in the BigQuery Data Validation Framework — what it checks, how it works, what the output looks like, and how to handle failures.
+This document describes each of the 17 validation layers in the BigQuery Data Validation Framework — what it checks, how it works, what the output looks like, and how to handle failures.
 
 ---
 
@@ -16,6 +16,13 @@ This document describes each of the 10 validation layers in the BigQuery Data Va
 - [Layer 8 — Column Distribution Validation](#layer-8--column-distribution-validation)
 - [Layer 9 — Null Value Validation](#layer-9--null-value-validation)
 - [Layer 10 — Column-Level Checksum Validation](#layer-10--column-level-checksum-validation)
+- [Layer 11 — Data Type Validation](#layer-11--data-type-validation)
+- [Layer 12 — Enum Validation](#layer-12--enum-validation)
+- [Layer 13 — Range Validation](#layer-13--range-validation)
+- [Layer 14 — Regex Validation](#layer-14--regex-validation)
+- [Layer 15 — Duplicate Row Validation](#layer-15--duplicate-row-validation)
+- [Layer 16 — JSON Schema Validation](#layer-16--json-schema-validation)
+- [Layer 17 — Non-Negative Validation](#layer-17--non-negative-validation)
 - [Status Reference](#status-reference)
 - [Enabling and Disabling Layers](#enabling-and-disabling-layers)
 
@@ -860,6 +867,439 @@ column_checksum_columns:
 
 ---
 
+## Layer 11 — Data Type Validation
+
+**Config flag:** `datatype_validation`
+**Test names:** `datatype_validation:{column}`
+**Validator:** `validators/datatype_validator.py`
+
+### What it checks
+
+For each column listed in `datatype_columns`, verifies that every non-null cell value is parseable as the declared `expected_type`. Prevents silent type corruption before the file reaches BigQuery.
+
+### How it works
+
+1. Iterates over every row in each declared column.
+2. Attempts to parse the cell value as the declared type.
+3. Null/empty cells are skipped — use Layer 9 for null checks.
+
+**Supported types:**
+
+| `expected_type` | Accepted values |
+|-----------------|----------------|
+| `integer` | Whole numbers — Python `int` / `float` with no fractional part / parseable string |
+| `float` | Any numeric value — Python `int` / `float` / numeric string |
+| `string` | Any non-null value — always passes |
+| `boolean` | `true`, `false`, `1`, `0`, `yes`, `no` (case-insensitive) |
+| `date` | `YYYY-MM-DD` format |
+| `timestamp` | ISO-8601 / `YYYY-MM-DD HH:MM:SS` parseable by `pandas.to_datetime` |
+
+### Config
+
+```yaml
+validation_layers:
+  datatype_validation: true
+
+datatype_columns:
+  - column: id
+    expected_type: integer
+  - column: amount
+    expected_type: float
+  - column: is_active
+    expected_type: boolean
+  - column: event_date
+    expected_type: date
+```
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "datatype_validation:amount",
+  "status": "FAIL",
+  "details": {
+    "column": "amount",
+    "expected_type": "float",
+    "invalid_count": 2,
+    "invalid_samples": [
+      { "row_index": 4, "value": "N/A" },
+      { "row_index": 9, "value": "pending" }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| `integer` cells with fractional values | Column contains floats; use `float` type instead |
+| `date` cells in wrong format | Source uses `MM/DD/YYYY` instead of `YYYY-MM-DD` |
+| `boolean` cells with unexpected tokens | Source uses `Y`/`N` — pre-process or remove from config |
+
+---
+
+## Layer 12 — Enum Validation
+
+**Config flag:** `enum_validation`
+**Test names:** `enum_validation:{column}`
+**Validator:** `validators/enum_validator.py`
+
+### What it checks
+
+For each column listed in `enum_columns`, verifies that every non-null value is a member of the declared `allowed_values` set. Catches bad categorical values that would silently pass row-count and aggregate checks.
+
+### How it works
+
+1. Coerces all values to `str` for comparison (case-sensitive).
+2. Computes the set of actual unique values and subtracts the allowed set.
+3. For each invalid value, counts how many rows contain it.
+4. Null/empty values are skipped — use Layer 9 for null checks.
+
+### Config
+
+```yaml
+validation_layers:
+  enum_validation: true
+
+enum_columns:
+  - column: status
+    allowed_values: [active, inactive, pending]
+  - column: payment_method
+    allowed_values: [credit_card, debit_card, bank_transfer, paypal]
+```
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "enum_validation:status",
+  "status": "FAIL",
+  "details": {
+    "column": "status",
+    "allowed_values": ["active", "inactive", "pending"],
+    "invalid_values": ["Active", "CANCELLED"],
+    "invalid_value_counts": { "Active": 3, "CANCELLED": 1 },
+    "invalid_row_count": 4
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Case mismatch (`Active` vs `active`) | Source data uses different casing — add variants or normalise upstream |
+| New category not in allowed set | Upstream source added a new code — update `allowed_values` |
+
+---
+
+## Layer 13 — Range Validation
+
+**Config flag:** `range_validation`
+**Test names:** `range_validation:{column}`
+**Validator:** `validators/range_validator.py`
+
+### What it checks
+
+For each column listed in `range_columns`, verifies that every numeric value falls within the declared `[min, max]` bounds (both inclusive). Prevents out-of-bounds values like negative ages or discount > 100%.
+
+### How it works
+
+1. Coerces values to numeric with `pd.to_numeric(errors="coerce")` — non-numeric cells are skipped.
+2. Checks each value against the declared bounds.
+3. Collects per-violation samples (up to 10) including row index and value.
+
+### Config
+
+```yaml
+validation_layers:
+  range_validation: true
+
+range_columns:
+  - column: amount
+    min: 0
+    max: 100000
+  - column: discount_percent
+    min: 0
+    max: 100
+```
+
+At least one of `min` or `max` must be provided per entry.
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "range_validation:amount",
+  "status": "FAIL",
+  "expected": { "min": 0, "max": 100000 },
+  "actual": { "min": -50.0, "max": 99500.0 },
+  "details": {
+    "column": "amount",
+    "violation_count": 2,
+    "violation_samples": [
+      { "row_index": 7, "value": -50.0, "violation": "< min (0)" },
+      { "row_index": 12, "value": -1.5, "violation": "< min (0)" }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Values below `min` | Refund/credit rows with negative amounts — use separate config or adjust min |
+| Values above `max` | Upper bound too tight; or unexpected data spike |
+
+---
+
+## Layer 14 — Regex Validation
+
+**Config flag:** `regex_validation`
+**Test names:** `regex_validation:{column}`
+**Validator:** `validators/regex_validator.py`
+
+### What it checks
+
+For each column listed in `regex_columns`, verifies that every non-null value fully matches the declared Python `re.fullmatch` pattern. Enforces format constraints such as email, phone, UUID, ISO date, country code, or ZIP code.
+
+### How it works
+
+1. Compiles the declared pattern with `re.compile` — syntax errors are caught early and reported as `ERROR`.
+2. Applies `re.fullmatch` to each non-null cell value.
+3. Collects up to 10 non-matching samples including row index and value.
+
+### Config
+
+```yaml
+validation_layers:
+  regex_validation: true
+
+regex_columns:
+  - column: email
+    pattern: "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$"
+  - column: transaction_uuid
+    pattern: "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+  - column: country_code
+    pattern: "^[A-Z]{2}$"
+```
+
+> `re.fullmatch` requires the pattern to match the **entire** value. Wrap with `.*` for substring matching.
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "regex_validation:email",
+  "status": "FAIL",
+  "details": {
+    "column": "email",
+    "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+    "invalid_count": 3,
+    "invalid_samples": [
+      { "row_index": 2, "value": "not-an-email" },
+      { "row_index": 8, "value": "missing@domain" }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Pattern too strict | Leading/trailing whitespace in source values — trim upstream |
+| UUID version mismatch | Pattern targets v4 UUIDs; source generates v1 — adjust pattern |
+| `ERROR` status | Regex syntax error in config — test pattern with `python -c "import re; re.compile('...')"` |
+
+---
+
+## Layer 15 — Duplicate Row Validation
+
+**Config flag:** `duplicate_row_validation`
+**Test name:** `duplicate_row_validation`
+**Validator:** `validators/duplicate_row_validator.py`
+
+### What it checks
+
+Detects rows where **all** column values are identical to another row in the file. This is distinct from Layer 3 (primary key uniqueness), which only checks declared PK column combinations.
+
+Catches:
+- Records accidentally included twice in the extract
+- Fan-out join duplicates that share the same primary key (all other columns also match)
+
+### How it works
+
+1. Applies `pandas.DataFrame.duplicated(keep=False)` — marks **all** copies of each duplicate row.
+2. Null values in any column are treated as equal for grouping purposes (pandas default).
+3. Collects up to 10 sample duplicate rows for diagnostics.
+
+### Config
+
+```yaml
+validation_layers:
+  duplicate_row_validation: true
+```
+
+No additional column config required.
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "duplicate_row_validation",
+  "status": "FAIL",
+  "expected": 0,
+  "actual": 4,
+  "details": {
+    "total_rows": 1000,
+    "duplicate_row_count": 4,
+    "duplicate_sample": [
+      { "row_index": 5, "values": { "id": "42", "amount": "150.0", "status": "active" } },
+      { "row_index": 99, "values": { "id": "42", "amount": "150.0", "status": "active" } }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Duplicate rows found | Double extraction from source; fan-out join |
+| Only partial duplication | PK uniqueness passes (Layer 3) but one non-PK column differs — check with Layer 7 |
+
+---
+
+## Layer 16 — JSON Schema Validation
+
+**Config flag:** `json_schema_validation`
+**Test names:** `json_schema_validation:{column}`
+**Validator:** `validators/json_schema_validator.py`
+
+### What it checks
+
+For each column listed in `json_schema_columns`, verifies that every non-null cell value is a valid JSON object (`dict`) and contains all declared `required_keys`. Useful for catching incomplete or malformed JSON payloads before they reach BigQuery.
+
+Example: a `customer_info` column that must always carry `name` and `age` keys.
+
+### How it works
+
+Accepts two cell shapes:
+- **Python `dict`** — already parsed (e.g. JSONL files loaded via `FileReader`)
+- **JSON string** — parsed with `json.loads()` (e.g. CSV files where the JSON is stored as a string)
+
+Cells that cannot be parsed as a `dict` are reported as violations. Null/empty cells are skipped — use Layer 9 for null checks.
+
+### Config
+
+```yaml
+validation_layers:
+  json_schema_validation: true
+
+json_schema_columns:
+  - column: customer_info
+    required_keys:
+      - name
+      - age
+  - column: metadata_json
+    required_keys:
+      - source
+      - version
+```
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "json_schema_validation:customer_info",
+  "status": "FAIL",
+  "details": {
+    "column": "customer_info",
+    "required_keys": ["name", "age"],
+    "violation_count": 2,
+    "violation_samples": [
+      { "row_index": 3, "missing_keys": ["age"], "present_keys": ["country", "name"] },
+      { "row_index": 11, "issue": "Value is not a JSON object (dict)", "value": "null_value_string" }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Missing required keys | Upstream system omitted optional fields in some rows |
+| Not a JSON object | Column contains a JSON array or primitive instead of an object |
+| `json.JSONDecodeError` (invalid JSON string) | CSV column contains malformed JSON — reported as "not a JSON object" violation |
+
+---
+
+## Layer 17 — Non-Negative Validation
+
+**Config flag:** `non_negative_validation`
+**Test names:** `non_negative_validation:{column}`
+**Validator:** `validators/non_negative_validator.py`
+
+### What it checks
+
+For each column listed in `non_negative_columns`, verifies that every non-null numeric value is `>= 0`. A focused companion to Layer 13 (`range_validation`) for the common case where a column must simply never go negative — amounts, quantities, prices, durations.
+
+### How it works
+
+1. Coerces values to numeric with `pd.to_numeric(errors="coerce")` — non-numeric cells are skipped.
+2. Flags any value where `value < 0`.
+3. Collects up to 10 violation samples including row index and value.
+4. Reports `actual_min` to help diagnose the most negative value seen.
+
+### Config
+
+```yaml
+validation_layers:
+  non_negative_validation: true
+
+non_negative_columns:
+  - amount
+  - quantity
+  - tax_amount
+  - discount_percent
+```
+
+For tighter bounds (e.g. strictly positive, or a maximum cap) use Layer 13 (`range_validation`) instead.
+
+### Output example — FAIL
+
+```json
+{
+  "test_name": "non_negative_validation:amount",
+  "status": "FAIL",
+  "expected": 0,
+  "actual": 3,
+  "details": {
+    "column": "amount",
+    "negative_value_count": 3,
+    "actual_min": -150.0,
+    "violation_samples": [
+      { "row_index": 2, "value": -150.0 },
+      { "row_index": 7, "value": -0.01 },
+      { "row_index": 14, "value": -25.5 }
+    ]
+  }
+}
+```
+
+### Common failure modes
+
+| Failure | Likely cause |
+|---------|-------------|
+| Negative values in `amount` | Refund/credit rows — consider filtering before validation or using `range_columns` with `min: 0` |
+| Non-numeric values skipped | Mixed-type column — add a `datatype_validation` (Layer 11) check alongside |
+
+---
+
 ## Status Reference
 
 Every individual test result carries one of the following status values:
@@ -880,22 +1320,47 @@ If any test is `FAIL`, the overall is `FAIL`. If no `FAIL` but there is an `ERRO
 
 ---
 
+## Metadata Writing
+
+After all validation layers complete, the framework calls `core/metadata_writer.py` to record the run in three BigQuery tables:
+
+| Table | Written |
+|-------|---------|
+| `validation_configs` | Config details (upserted — one row per unique config path) |
+| `validation_runs` | Run summary: `run_id`, `config_id`, `config_name`, `overall_status`, test counts, timing |
+| `validation_tests` | One row per individual test result, linked to `run_id` |
+
+The metadata write is **best-effort** — any exception is caught, logged as a warning, and does not affect the validation exit code or JSON output.
+
+To skip metadata writes entirely, pass `--no-metadata` on the CLI or `"skip_metadata": true` in the Cloud Function request body.
+
+See [README.md — BigQuery Metadata Tables](README.md#bigquery-metadata-tables) for the full column reference.
+
+---
+
 ## Enabling and Disabling Layers
 
-All 10 layers are enabled by default. To disable a layer, set its flag to `false`:
+All 17 layers are enabled by default. To disable a layer, set its flag to `false`:
 
 ```yaml
 validation_layers:
-  metadata_validation: true     # Layer 1
-  row_count_validation: true    # Layer 2
-  primary_key_uniqueness: true  # Layer 3
-  aggregate_validation: true    # Layer 4
-  partition_validation: false   # Layer 5 — also needs partition.enabled: true
-  hash_validation: true         # Layer 6
-  random_sampling: false        # Layer 7 — disabled when PK is TIMESTAMP
-  column_distribution: true     # Layer 8
-  null_validation: true         # Layer 9
-  column_checksum: true         # Layer 10
+  metadata_validation: true       # Layer 1
+  row_count_validation: true      # Layer 2
+  primary_key_uniqueness: true    # Layer 3
+  aggregate_validation: true      # Layer 4
+  partition_validation: false     # Layer 5 — also needs partition.enabled: true
+  hash_validation: true           # Layer 6
+  random_sampling: false          # Layer 7 — disabled when PK is TIMESTAMP
+  column_distribution: true       # Layer 8
+  null_validation: true           # Layer 9
+  column_checksum: true           # Layer 10
+  datatype_validation: true       # Layer 11
+  enum_validation: true           # Layer 12
+  range_validation: true          # Layer 13
+  regex_validation: true          # Layer 14
+  duplicate_row_validation: true  # Layer 15
+  json_schema_validation: true    # Layer 16
+  non_negative_validation: true   # Layer 17
 ```
 
 ### Special prerequisites
@@ -909,6 +1374,13 @@ validation_layers:
 | Layer 8 (Distribution) | `distribution_columns` must list only NUMERIC columns |
 | Layer 9 (Null) | `null_check_columns` may be empty (checks all columns) |
 | Layer 10 (Column Checksum) | `column_checksum_columns` may be empty (checks all columns) |
+| Layer 11 (Data Type) | `datatype_columns` must be non-empty to produce results |
+| Layer 12 (Enum) | `enum_columns` must be non-empty to produce results |
+| Layer 13 (Range) | `range_columns` must be non-empty; at least one bound per entry |
+| Layer 14 (Regex) | `regex_columns` must be non-empty with valid Python patterns |
+| Layer 15 (Duplicate Row) | No additional config — always runs if enabled |
+| Layer 16 (JSON Schema) | `json_schema_columns` must be non-empty to produce results |
+| Layer 17 (Non-Negative) | `non_negative_columns` must be non-empty to produce results |
 
 ### Recommended minimal config (fast smoke test)
 
@@ -926,6 +1398,13 @@ validation_layers:
   column_distribution: false
   null_validation: false
   column_checksum: false
+  datatype_validation: false
+  enum_validation: false
+  range_validation: false
+  regex_validation: false
+  duplicate_row_validation: false
+  json_schema_validation: false
+  non_negative_validation: false
 ```
 
 ### Recommended full config (thorough validation)
@@ -936,10 +1415,17 @@ validation_layers:
   row_count_validation: true
   primary_key_uniqueness: true
   aggregate_validation: true
-  partition_validation: true    # requires partition.enabled: true
+  partition_validation: true      # requires partition.enabled: true
   hash_validation: true
-  random_sampling: true         # requires STRING/INTEGER-only PK
-  column_distribution: true     # requires NUMERIC-only distribution_columns
+  random_sampling: true           # requires STRING/INTEGER-only PK
+  column_distribution: true       # requires NUMERIC-only distribution_columns
   null_validation: true
   column_checksum: true
+  datatype_validation: true       # requires datatype_columns
+  enum_validation: true           # requires enum_columns
+  range_validation: true          # requires range_columns
+  regex_validation: true          # requires regex_columns with valid patterns
+  duplicate_row_validation: true
+  json_schema_validation: true    # requires json_schema_columns
+  non_negative_validation: true   # requires non_negative_columns
 ```

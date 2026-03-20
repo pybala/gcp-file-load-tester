@@ -21,7 +21,7 @@ This document lists every test case the BigQuery Data Validation Framework can p
 
 | Test Name | Description | Config Flag |
 |-----------|-------------|-------------|
-| `schema_validation` | Compares the set of column names in the file against the BigQuery table schema. Reports missing and extra columns. Works for CSV and JSONL, including STRUCT/ARRAY columns. | `metadata_validation: true` |
+| `schema_validation` | Compares the set of column names in the file against the BigQuery table schema. Reports missing and extra columns. Works for CSV, JSON, and JSONL, including STRUCT/ARRAY columns. File format (type, delimiter, encoding, etc.) is controlled by the optional `file_format` config block. | `metadata_validation: true` |
 
 **Fixed count:** 1 test per run.
 
@@ -131,12 +131,99 @@ One test is produced for **each column** in `column_checksum_columns` (or every 
 
 ---
 
+### Layer 11 — Data Type Validation
+
+One test is produced for **each column** listed in `datatype_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `datatype_validation:{column}` | Checks that every non-null cell value in the column is parseable as the declared `expected_type`. Null / empty values are skipped — use Layer 9 for null checks. | Any column — type governs what is valid |
+
+**Supported `expected_type` values:** `integer`, `float`, `string`, `boolean`, `date`, `timestamp`.
+
+**Variable count:** 1 test per column in `datatype_columns`.
+
+---
+
+### Layer 12 — Enum Validation
+
+One test is produced for **each column** listed in `enum_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `enum_validation:{column}` | Checks that every non-null value is a member of the declared `allowed_values` set. Values are compared as strings (case-sensitive). Reports each invalid value and how many rows contain it. | Categorical / low-cardinality columns: status, payment_method, country_code, etc. |
+
+**Variable count:** 1 test per column in `enum_columns`.
+
+---
+
+### Layer 13 — Range Validation
+
+One test is produced for **each column** listed in `range_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `range_validation:{column}` | Checks that every numeric value falls within the declared `[min, max]` bounds (both inclusive). Both `min` and `max` are optional individually; at least one must be provided. Reports each out-of-range value. | Numeric columns: amount, age, quantity, discount_percent, score |
+
+**Variable count:** 1 test per column in `range_columns`.
+
+---
+
+### Layer 14 — Regex Validation
+
+One test is produced for **each column** listed in `regex_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `regex_validation:{column}` | Checks that every non-null value fully matches (`re.fullmatch`) the declared Python regex `pattern`. Reports each non-matching value (up to 10 samples). | String columns with format constraints: email, UUID, phone, country_code, ZIP |
+
+**Variable count:** 1 test per column in `regex_columns`.
+
+---
+
+### Layer 15 — Duplicate Row Validation
+
+| Test Name | Description | Config Flag |
+|-----------|-------------|-------------|
+| `duplicate_row_validation` | Detects rows where **all** column values are identical to another row in the file. Distinct from Layer 3 (PK uniqueness) which only inspects declared primary key columns. Null values in any column are treated as equal for grouping purposes. | `duplicate_row_validation: true` |
+
+**Fixed count:** 1 test per run.
+
+---
+
+### Layer 16 — JSON Schema Validation
+
+One test is produced for **each column** listed in `json_schema_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `json_schema_validation:{column}` | Checks that every non-null cell value in the column is a valid JSON object (`dict`) and contains all keys declared in `required_keys`. Accepts both pre-parsed dicts (JSONL) and JSON-formatted strings (CSV). Reports missing keys per row. | JSON / STRUCT columns: `customer_info`, `metadata_json`, `attributes` |
+
+**Example:** `customer_info` must contain keys `name` and `age`.
+
+**Variable count:** 1 test per column in `json_schema_columns`.
+
+---
+
+### Layer 17 — Non-Negative Validation
+
+One test is produced for **each column** listed in `non_negative_columns`.
+
+| Test Name Pattern | Description | Suitable Columns |
+|-------------------|-------------|-----------------|
+| `non_negative_validation:{column}` | Checks that every non-null numeric value is `>= 0`. Non-parsable values are skipped. Reports each negative value (up to 10 samples) and the column minimum. For tighter bounds use Layer 13 (`range_validation`). | Numeric columns that must never be negative: `amount`, `quantity`, `price`, `tax_amount`, `duration` |
+
+**Variable count:** 1 test per column in `non_negative_columns`.
+
+---
+
 ## Test Suite: test1 — Flat CSV (`generic_file_load_test`)
 
-**Config:** `tests/test1/validation_config.yaml`  
-**Source file:** `tests/test1/bq_generic_test_file.csv` — 5 rows, 13 columns (flat CSV)  
-**BQ table:** `raw_file_loads.generic_file_load_test`  
-**Primary key:** `id`  
+**Config:** `tests/test1/validation_config.yaml`
+**Source file:** `tests/test1/bq_generic_test_file.csv` — 5 rows, 13 columns (flat CSV)
+**File format:** `file_type: csv`, `delimiter: ","`, `enclosed_by: '"'`, `encoding: utf-8`
+**BQ table:** `raw_file_loads.generic_file_load_test`
+**Primary key:** `id`
 **Last run:** 2026-03-13 · **overall_status: PASS** · 15/15 passed
 
 | # | Test Name | Layer | Status | Notes |
@@ -163,10 +250,11 @@ One test is produced for **each column** in `column_checksum_columns` (or every 
 
 ## Test Suite: test2\_nested — JSONL with STRUCT + ARRAY (`orders_with_nested`)
 
-**Config:** `tests/test2_nested/validation_config.yaml`  
-**Source file:** `tests/test2_nested/bq_json_test_file.jsonl` — 3 rows, 9 columns (JSONL)  
-**BQ table:** `raw_file_loads.orders_with_nested`  
-**Primary key:** `order_id`  
+**Config:** `tests/test2_nested/validation_config.yaml`
+**Source file:** `tests/test2_nested/bq_json_test_file.jsonl` — 3 rows, 9 columns (JSONL)
+**File format:** `file_type: jsonl`, `encoding: utf-8`
+**BQ table:** `raw_file_loads.orders_with_nested`
+**Primary key:** `order_id`
 **Schema includes:** `customer_info STRUCT<country, email, name>` and `item_ids ARRAY<STRING>`
 
 ### Run 1 results (Layers 1–8, before Layers 9–10 were added)
@@ -359,6 +447,15 @@ When re-run with valid credentials, Layers 9 and 10 will produce **18 additional
 | `column_distribution_{column}` | 8 | 1 per distribution column |
 | `null_validation:{column}` | 9 | 1 per null-checked column |
 | `column_checksum:{column}` | 10 | 1 per checksum column |
+| `datatype_validation:{column}` | 11 | 1 per column in `datatype_columns` |
+| `enum_validation:{column}` | 12 | 1 per column in `enum_columns` |
+| `range_validation:{column}` | 13 | 1 per column in `range_columns` |
+| `regex_validation:{column}` | 14 | 1 per column in `regex_columns` |
+| `duplicate_row_validation` | 15 | Always 1 |
+| `json_schema_validation:{column}` | 16 | 1 per column in `json_schema_columns` |
+| `non_negative_validation:{column}` | 17 | 1 per column in `non_negative_columns` |
+
+> **Note on `aggregate_columns` functions:** The supported aggregate functions are `sum`, `min`, `max`, `avg`, and `distinct_count`. The function `count` is **not** supported — use `distinct_count` to count distinct values, or Layer 2 (`row_count_validation`) for the total row count.
 
 ---
 
@@ -366,9 +463,10 @@ When re-run with valid credentials, Layers 9 and 10 will produce **18 additional
 
 | Test Suite | File Type | Rows | Columns | Layers Run | Total Tests | Status |
 |------------|-----------|------|---------|------------|-------------|--------|
-| test1 — `generic_file_load_test` | CSV | 5 | 13 | 1–4, 6–8 | 15 | ✅ PASS |
-| test2\_nested — `orders_with_nested` (Run 1) | JSONL | 3 | 9 | 1–4, 6–8 | 21 | ✅ PASS |
-| test2\_nested — `orders_with_nested` (Run 2) | JSONL | 3 | 9 | 1–4, 6–10 | 39 | ⏳ Pending credential refresh |
+| test1 — `generic_file_load_test` | CSV | 5 | 13 | 1–4, 6–10 | 41 | ✅ PASS |
+| test2\_nested — `orders_with_nested` | JSONL | 3 | 9 | 1–4, 6–10 | 39 | ✅ PASS |
 | test3\_complex\_csv — `customer_transactions` | CSV | 8 | 17 | 1–10 | 78 | ✅ PASS |
 
-**Grand total of distinct test case types supported:** 12 test name patterns across 10 validation layers.
+> Metadata (validation configs, run summaries, and individual test results) is automatically written to `data-test-automation-489413.validation_ds` after every run. Each run row in `validation_runs` carries a `config_id` (foreign key to `validation_configs`) and a `config_name` (config file path or `dataset.table`) for cross-table lookups. Pass `--no-metadata` to skip.
+
+**Grand total of distinct test case types supported:** 19 test name patterns across 17 validation layers.
